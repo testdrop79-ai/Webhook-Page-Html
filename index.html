@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webhook Management</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Webhook Management System</h1>
+            <p>Create and manage your webhooks easily</p>
+        </header>
+
+        <main>
+            <!-- Create Webhook Section -->
+            <section class="create-webhook">
+                <h2>1. Create Webhook</h2>
+                <form id="webhookForm" class="webhook-form">
+                    <div class="form-group">
+                        <label for="webhookName">Name:</label>
+                        <input type="text" id="webhookName" name="webhookName" placeholder="Enter webhook name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="webhookUrl">Webhook URL:</label>
+                        <input type="url" id="webhookUrl" name="webhookUrl" placeholder="https://example.com/webhook" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="webhookDescription">Description (Optional):</label>
+                        <textarea id="webhookDescription" name="webhookDescription" placeholder="Enter webhook description"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="save-btn">Save</button>
+                </form>
+            </section>
+
+            <!-- Select Webhook Section -->
+            <section class="select-webhook">
+                <h2>2. Select Webhook - Library</h2>
+                <div class="webhook-library">
+                    <div class="library-header">
+                        <h3>Saved Webhooks</h3>
+                        <button id="refreshLibrary" class="refresh-btn">Refresh</button>
+                    </div>
+                    
+                    <div id="webhookList" class="webhook-list">
+                        <!-- Webhooks will be populated here -->
+                    </div>
+                    
+                    <div id="emptyLibrary" class="empty-library">
+                        <p>No webhooks saved yet. Create your first webhook above!</p>
+                    </div>
+                </div>
+                
+                <!-- Selected Webhook Details -->
+                <div id="selectedWebhook" class="selected-webhook" style="display: none;">
+                    <h3>Selected Webhook Details</h3>
+                    <div class="webhook-details">
+                        <p><strong>Name:</strong> <span id="selectedName"></span></p>
+                        <p><strong>URL:</strong> <span id="selectedUrl"></span></p>
+                        <p><strong>Description:</strong> <span id="selectedDescription"></span></p>
+                        <p><strong>Created:</strong> <span id="selectedDate"></span></p>
+                    </div>
+                    
+                    <div class="webhook-actions">
+                        <button id="editWebhook" class="edit-btn">Edit</button>
+                        <button id="deleteWebhook" class="delete-btn">Delete</button>
+                        <button id="testWebhook" class="test-btn">Test Webhook</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Test Results Section -->
+            <section id="testResults" class="test-results" style="display: none;">
+                <h3>Test Results</h3>
+                <div id="testOutput" class="test-output"></div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Success/Error Messages -->
+    <div id="messageContainer" class="message-container"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
