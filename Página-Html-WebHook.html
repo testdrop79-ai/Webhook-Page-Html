@@ -1,0 +1,2671 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="auto">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description"
+    content="Interface para criação de payloads de webhook com suporte a diálogos, vozes customizadas e campos personalizáveis" />
+
+  <meta name="keywords" content="webhook, n8n, payload, voz, diálogo, automação" />
+  <title>Webhook UI — Falas sob Seleção</title>
+  <style>
+    :root {
+      /* Cores base - Tema Aztra G */
+      --bg: #f8fafc;
+      --card: #fff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --emerald: #059669;
+      --emerald-700: #047857;
+      --navy: #0b1220;
+      --magenta: #cf2e6b;
+      --accent: #0ea5e9;
+      --accent-700: #0284c7;
+      --primary: #6366f1;
+      --primary-700: #4f46e5;
+      --primary-50: #eef2ff;
+      --secondary: #f59e0b;
+      --secondary-700: #d97706;
+      --secondary-50: #fffbeb;
+      --success: #10b981;
+      --success-700: #047857;
+      --success-50: #ecfdf5;
+      --warning: #f59e0b;
+      --warning-700: #d97706;
+      --warning-50: #fffbeb;
+      --error: #ef4444;
+      --error-700: #dc2626;
+      --error-50: #fef2f2;
+
+      /* Header */
+      --header-h: 64px;
+
+      /* Geometria */
+      --radius: 20px;
+      --radius-sm: 12px;
+      --radius-lg: 24px;
+      --border-width: 3px;
+      --shadow: 0 1px 3px rgba(0, 0, 0, .1), 0 4px 12px rgba(0, 0, 0, .05);
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, .05);
+      --shadow-lg: 0 10px 25px rgba(0, 0, 0, .1);
+
+      /* Tipografia e acessibilidade */
+      --font-scale: 1;
+      --contrast-mult: 1;
+      --line-height: 1.6;
+      --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+      /* Espaçamentos */
+      --space-xs: 4px;
+      --space-sm: 8px;
+      --space-md: 12px;
+      --space-lg: 16px;
+      --space-xl: 24px;
+      --space-2xl: 32px;
+
+      /* Animações */
+      --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+      /* Breakpoints */
+      --mobile: 480px;
+      --tablet: 768px;
+      --desktop: 1024px;
+      --wide: 1200px;
+      /* Fundo da aplicação (dinâmico por tema/preset) */
+      --app-bg: linear-gradient(135deg, var(--primary-50) 0%, var(--card) 50%, var(--bg) 100%);
+    }
+
+    /* Temas */
+    [data-theme="dark"] {
+      --bg: #0b1220;
+      --card: #0f172a;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --border: #1f2937;
+      --shadow: 0 1px 3px rgba(0, 0, 0, .3), 0 4px 12px rgba(0, 0, 0, .2);
+      --primary: #818cf8;
+      --primary-700: #6366f1;
+      --primary-50: #1e1b4b;
+      --app-bg: linear-gradient(135deg, #020617 0%, #0b1220 50%, #020617 100%);
+    }
+
+    [data-theme="dark"] header {
+      background: #0f172acc;
+    }
+
+    [data-theme="purple"] {
+      --primary: #8b5cf6;
+      --primary-700: #7c3aed;
+      --primary-50: #f3e8ff;
+      --accent: #a855f7;
+      --accent-700: #9333ea;
+    }
+
+    [data-theme="green"] {
+      --primary: #10b981;
+      --primary-700: #059669;
+      --primary-50: #ecfdf5;
+      --accent: #34d399;
+      --accent-700: #10b981;
+      --app-bg: radial-gradient(1200px 600px at -10% 20%, rgba(16,185,129,.15), transparent 60%), radial-gradient(1000px 600px at 120% 0%, rgba(34,197,94,.2), transparent 60%), linear-gradient(135deg, #061a12 0%, #0a2b1f 50%, #061a12 100%);
+    }
+
+    [data-theme="orange"] {
+      --primary: #f59e0b;
+      --primary-700: #d97706;
+      --primary-50: #fffbeb;
+      --accent: #fbbf24;
+      --accent-700: #f59e0b;
+    }
+
+    /* Novo tema tech: preto -> verde */
+    [data-theme="tech"] {
+      --bg: #06090f;
+      --card: #0b1220;
+      --text: #d1fae5;
+      --muted: #86efac;
+      --border: #0f2a1d;
+      --border-strong: #134e4a;
+      --primary: #22c55e;
+      --primary-700: #16a34a;
+      --primary-50: #052e1a;
+      --accent: #34d399;
+      --accent-700: #10b981;
+      --app-bg: linear-gradient(135deg, #000000 0%, #02140a 35%, #052e1a 100%);
+    }
+
+    /* Presets de background */
+    [data-bg="none"] { --app-bg: var(--bg); }
+    [data-bg="grid"] { --app-bg: radial-gradient(circle at 1px 1px, rgba(255,255,255,.06) 1px, transparent 0) 0 0/20px 20px, var(--bg); }
+    [data-bg="mesh"] { --app-bg: radial-gradient(800px 400px at 20% 0%, rgba(34,197,94,.18), transparent 60%), radial-gradient(700px 300px at 80% 0%, rgba(16,185,129,.15), transparent 60%), linear-gradient(135deg, #06090f, #0b1220); }
+    [data-bg="waves"] { --app-bg: repeating-linear-gradient(135deg, rgba(34,197,94,.08) 0 8px, transparent 8px 16px), linear-gradient(135deg, #06090f, #0b1220); }
+    [data-bg="radial"] { --app-bg: radial-gradient(circle at 50% -10%, rgba(34,197,94,.25), transparent 60%), linear-gradient(135deg, #06090f, #0b1220); }
+
+    [data-contrast="high"] {
+      --border: #0ea5e9;
+      --emerald: #10b981;
+      --magenta: #f43f5e;
+      --contrast-mult: 1.15;
+      --shadow: 0 2px 8px rgba(0, 0, 0, .15), 0 8px 24px rgba(0, 0, 0, .1);
+    }
+
+    [data-size="compact"] {
+      --space-xs: 2px;
+      --space-sm: 4px;
+      --space-md: 8px;
+      --space-lg: 12px;
+      --space-xl: 16px;
+      --font-scale: 0.9;
+      --header-h: 48px;
+    }
+
+    [data-size="large"] {
+      --space-xs: 6px;
+      --space-sm: 12px;
+      --space-md: 18px;
+      --space-lg: 24px;
+      --space-xl: 36px;
+      --font-scale: 1.1;
+      --header-h: 80px;
+    }
+
+    /* Reset e base */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      height: 100%;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background: var(--app-bg);
+      color: var(--text);
+      font: calc(14px * var(--font-scale)) / var(--line-height) var(--font-family);
+      line-height: var(--line-height);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    /* Utilitários de layout */
+    .container {
+      max-width: var(--wide);
+      margin: 0 auto;
+      padding: 0 var(--space-lg);
+      width: 100%;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* Layout principal */
+    main {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-xl);
+      padding: var(--space-xl) 0;
+      min-height: calc(100vh - var(--header-h));
+    }
+
+    @media (min-width: 768px) {
+      main {
+        gap: var(--space-2xl);
+      }
+    }
+
+    @media (min-width: 1024px) {
+      main {
+        grid-template-columns: 2fr 1fr;
+      }
+    }
+
+    /* Header */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: saturate(120%) blur(12px);
+      background: rgba(255, 255, 255, 0.8);
+      border-bottom: 1px solid var(--border);
+      transition: all var(--transition-normal);
+      box-shadow: var(--shadow-sm);
+    }
+
+    [data-theme="dark"] header {
+      background: rgba(15, 23, 42, 0.8);
+    }
+
+    header .bar {
+      display: flex;
+      gap: var(--space-md);
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-md) 0;
+      min-height: var(--header-h);
+      flex-wrap: wrap;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: calc(18px * var(--font-scale));
+      font-weight: 700;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    h1::before {
+      content: "🎯";
+      font-size: 1.2em;
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: calc(16px * var(--font-scale));
+      }
+
+      header .bar {
+        gap: var(--space-sm);
+      }
+    }
+
+    /* Botões */
+    .pill {
+      padding: var(--space-sm) var(--space-lg);
+      border-radius: var(--radius-lg);
+      font-weight: 600;
+      border: 1px solid transparent;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      background: var(--card);
+      color: var(--text);
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      font-size: calc(14px * var(--font-scale));
+      white-space: nowrap;
+    }
+
+    .pill:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+      background: var(--primary-50);
+      color: var(--primary-700);
+    }
+
+    .pill:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+
+    .pill:active {
+      transform: translateY(0);
+    }
+
+    .pill.navy {
+      background: linear-gradient(135deg, var(--navy), var(--primary-700));
+      color: #fff;
+      border-radius: 20px;
+      border: var(--border-width) solid color-mix(in oklab, var(--border-strong) 60%, transparent);
+    }
+
+    .pill.navy:hover {
+      background: linear-gradient(135deg, var(--primary-700), var(--navy));
+    }
+
+    .pill.magenta {
+      background: linear-gradient(135deg, var(--magenta), var(--error));
+      color: #fff;
+    }
+
+    .pill.magenta:hover {
+      background: linear-gradient(135deg, var(--error), var(--magenta));
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card);
+      border: var(--border-width) solid color-mix(in oklab, var(--border) calc(100% * var(--contrast-mult)), transparent);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: var(--space-lg);
+      transition: all var(--transition-normal);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      opacity: 0;
+      transition: opacity var(--transition-normal);
+    }
+
+    .card:hover {
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-2px);
+    }
+
+    .card:hover::before {
+      opacity: 1;
+    }
+
+    /* Formulários */
+    .row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-md);
+    }
+
+    @media (min-width: 480px) {
+      .row {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (min-width: 768px) {
+      .row.thirds {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    .label {
+      font-size: calc(13px * var(--font-scale));
+      font-weight: 600;
+      margin-bottom: var(--space-xs);
+      color: var(--text);
+      display: block;
+    }
+
+    .input,
+    select,
+    textarea {
+      width: 100%;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: var(--space-sm) var(--space-md);
+      outline: none;
+      background: var(--card);
+      color: var(--text);
+      transition: all var(--transition-fast);
+      font: inherit;
+      font-size: calc(14px * var(--font-scale));
+    }
+
+    .input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-50);
+      transform: translateY(-1px);
+    }
+
+    .input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+
+    .input:invalid {
+      border-color: #ef4444;
+      box-shadow: 0 0 0 3px #fef2f2;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+      font-family: inherit;
+    }
+
+    select {
+      cursor: pointer;
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+      background-position: right var(--space-sm) center;
+      background-repeat: no-repeat;
+      background-size: 1.5em 1.5em;
+      padding-right: calc(var(--space-sm) + 1.5em + var(--space-xs));
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    /* Tipografia */
+    .section-title {
+      font-size: calc(16px * var(--font-scale));
+      font-weight: 700;
+      margin-bottom: var(--space-md);
+    }
+
+    /* Separadores */
+    .divider {
+      height: var(--border-width);
+      background: color-mix(in oklab, var(--border) 70%, transparent);
+      margin: var(--space-lg) 0;
+    }
+
+    /* Botões padrão */
+    .btn {
+      padding: var(--space-sm) var(--space-md);
+      border-radius: 20px;
+      border: var(--border-width) solid var(--border);
+      background: color-mix(in oklab, var(--card) 85%, transparent);
+      color: var(--text);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      font: inherit;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      font-size: calc(14px * var(--font-scale));
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left var(--transition-normal);
+    }
+
+    .btn:hover::before {
+      left: 100%;
+    }
+
+    .btn:hover {
+      background: color-mix(in oklab, var(--primary-50) 40%, transparent);
+      border-color: var(--primary);
+      color: var(--primary-700);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .btn:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      background: var(--muted);
+      color: var(--text);
+    }
+
+    .btn.prim {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-700) 100%);
+      color: #052e1a;
+      border-color: color-mix(in oklab, var(--primary-700) 60%, transparent);
+      font-weight: 600;
+      box-shadow: var(--shadow);
+    }
+
+    .btn.prim:hover {
+      background: linear-gradient(135deg, var(--primary-700), var(--primary));
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .btn.small {
+      padding: var(--space-xs) var(--space-sm);
+      font-size: calc(12px * var(--font-scale));
+    }
+
+    .btn.large {
+      padding: var(--space-md) var(--space-lg);
+      font-size: calc(16px * var(--font-scale));
+    }
+
+    /* Grids */
+    .grid-auto {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: var(--space-md);
+    }
+
+    /* Estados */
+    .hidden {
+      display: none !important;
+    }
+
+    .loading {
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .error {
+      border-color: #ef4444 !important;
+    }
+
+    .success {
+      border-color: var(--emerald) !important;
+    }
+
+    /* Notificações */
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: var(--space-lg);
+      transform: translateX(-50%);
+      background: #0f172a;
+      color: #fff;
+      padding: var(--space-sm) var(--space-md);
+      border-radius: 999px;
+      box-shadow: var(--shadow);
+      z-index: 990;
+      animation: toastIn 0.3s ease;
+      display: none;
+    }
+
+    @keyframes toastIn {
+      from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+
+    /* Modais */
+    .modal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, .4);
+      z-index: 900;
+      backdrop-filter: blur(2px);
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal .box {
+      background: var(--card);
+      color: var(--text);
+      width: min(760px, 92vw);
+      max-height: 86vh;
+      overflow: auto;
+      border: var(--border-width) solid var(--border);
+      border-radius: var(--radius);
+      padding: var(--space-lg);
+      box-shadow: var(--shadow);
+      animation: modalIn 0.3s ease;
+    }
+
+    @keyframes modalIn {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    /* Código */
+    .kbd {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0 var(--space-xs);
+      background: color-mix(in oklab, var(--border) 30%, var(--card));
+      font-size: .85em;
+    }
+
+    /* Responsividade */
+    @media (max-width: 480px) {
+      .container {
+        padding: 0 var(--space-sm);
+      }
+
+      main {
+        padding: var(--space-md) 0;
+        gap: var(--space-lg);
+      }
+
+      .pill {
+        padding: var(--space-xs) var(--space-sm);
+        font-size: 12px;
+      }
+
+      .btn {
+        padding: var(--space-xs) var(--space-sm);
+        font-size: 12px;
+        border-width: 2px;
+      }
+
+      .card {
+        padding: var(--space-md);
+      }
+
+      .row {
+        grid-template-columns: 1fr;
+        gap: var(--space-sm);
+      }
+
+      .row.thirds {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: calc(16px * var(--font-scale));
+      }
+
+      .btn-text {
+        display: none;
+      }
+
+      .pill .btn-text {
+        display: none;
+      }
+
+      :root {
+        --header-h: 56px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 0 var(--space-md);
+      }
+
+      main {
+        padding: var(--space-lg) 0;
+      }
+
+      .pill {
+        padding: var(--space-xs) var(--space-md);
+        font-size: 13px;
+      }
+
+      .btn {
+        padding: var(--space-xs) var(--space-sm);
+      }
+
+      .card {
+        padding: var(--space-md);
+      }
+
+      .row {
+        gap: var(--space-sm);
+      }
+
+      h1 {
+        font-size: calc(17px * var(--font-scale));
+      }
+
+      :root {
+        --header-h: 60px;
+      }
+    }
+
+    @media (max-width: 1024px) {
+      .grid-auto {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      }
+    }
+
+    @media (min-width: 768px) {
+      .audio-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .audio-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    /* Melhorias para touch devices */
+    @media (hover: none) and (pointer: coarse) {
+
+      .btn,
+      .pill {
+        min-height: 44px;
+        min-width: 44px;
+        padding: var(--space-sm) var(--space-md);
+      }
+
+      .input,
+      select,
+      textarea {
+        min-height: 44px;
+        font-size: 16px;
+        /* Previne zoom no iOS */
+      }
+    }
+
+    /* Modo compacto para telas pequenas */
+    @media (max-width: 360px) {
+      [data-size="compact"] {
+        --space-xs: 2px;
+        --space-sm: 4px;
+        --space-md: 6px;
+        --space-lg: 8px;
+        --space-xl: 12px;
+        --font-scale: 0.85;
+        --header-h: 48px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* Melhorias de acessibilidade */
+    @media (prefers-contrast: high) {
+      :root {
+        --border: #000;
+        --text: #000;
+        --bg: #fff;
+        --card: #fff;
+      }
+
+      [data-theme="dark"] {
+        --border: #fff;
+        --text: #fff;
+        --bg: #000;
+        --card: #000;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <a class="sr-only" href="#main">Pular para o conteúdo</a>
+
+  <header role="banner" aria-label="Barra de ferramentas">
+    <div class="container bar">
+      <h1>Webhook — Gatilho de Criação Aztra G</h1>
+      <nav aria-label="Ações principais">
+        <div style="display:flex; gap:var(--space-sm); align-items:center; flex-wrap:wrap">
+          <button id="btnSettings" class="pill navy" aria-haspopup="dialog" aria-controls="modalSettings"
+            aria-label="Abrir configurações">
+            <span aria-hidden="true">⚙️</span>
+            <span class="btn-text">Configurações</span>
+          </button>
+          <button id="btnSavePreset" class="pill navy" aria-label="Salvar preset atual">
+            <span aria-hidden="true">💾</span>
+            <span class="btn-text">Salvar Preset</span>
+          </button>
+          <button id="btnLoadPreset" class="pill magenta" aria-haspopup="dialog" aria-controls="modalLoadPreset"
+            aria-label="Carregar preset">
+            <span aria-hidden="true">📂</span>
+            <span class="btn-text">Carregar Preset</span>
+          </button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="container" tabindex="-1" role="main">
+    <section class="card" aria-labelledby="sec-trigger-title">
+      <header>
+        <h2 id="sec-trigger-title" class="section-title">1) Webhook — Gatilho de Criação Aztra G</h2>
+        <p class="muted" style="margin-top:0">Esta página coleta os dados e envia ao seu Webhook. O
+          <strong>roteamento</strong> é decisão do seu nó no <strong>N8N</strong>.
+        </p>
+      </header>
+
+      <form id="mainForm" aria-label="Formulário principal">
+        <fieldset class="row thirds" role="group" aria-label="Campos básicos">
+          <div>
+            <label class="label" for="tema" id="label-tema">Tema</label>
+            <select id="tema" class="input" aria-labelledby="label-tema" required>
+              <option value="">— Selecione um tema —</option>
+              <option value="Transformação glam">Transformação glam</option>
+              <option value="Makeover completo">Makeover completo</option>
+              <option value="Estilo vintage">Estilo vintage</option>
+              <option value="Look moderno">Look moderno</option>
+              <option value="Beleza natural">Beleza natural</option>
+              <option value="Glamour clássico">Glamour clássico</option>
+              <option value="Estilo casual">Estilo casual</option>
+              <option value="Elegância sofisticada">Elegância sofisticada</option>
+              <option value="Tendência fashion">Tendência fashion</option>
+              <option value="Estilo boêmio">Estilo boêmio</option>
+              <option value="Look profissional">Look profissional</option>
+              <option value="Estilo romântico">Estilo romântico</option>
+              <option value="Glamour noturno">Glamour noturno</option>
+              <option value="Estilo minimalista">Estilo minimalista</option>
+              <option value="Transformação radical">Transformação radical</option>
+              <option value="Outro">Outro (especificar)</option>
+            </select>
+            <input id="tema-custom" class="input" placeholder="Especificar tema personalizado"
+              style="margin-top:8px; display:none" />
+          </div>
+          <div>
+            <label class="label" for="categoria" id="label-categoria">Categoria</label>
+            <select id="categoria" class="input" aria-labelledby="label-categoria" required>
+              <option value="">— Selecione uma categoria —</option>
+              <option value="Beleza">Beleza</option>
+              <option value="Moda">Moda</option>
+              <option value="Maquiagem">Maquiagem</option>
+              <option value="Cabelo">Cabelo</option>
+              <option value="Estilo de vida">Estilo de vida</option>
+              <option value="Fitness">Fitness</option>
+              <option value="Bem-estar">Bem-estar</option>
+              <option value="Tutorial">Tutorial</option>
+              <option value="Review">Review</option>
+              <option value="Dicas">Dicas</option>
+              <option value="Tendências">Tendências</option>
+              <option value="Inspiração">Inspiração</option>
+              <option value="Educativo">Educativo</option>
+              <option value="Entretenimento">Entretenimento</option>
+              <option value="Lifestyle">Lifestyle</option>
+              <option value="Outro">Outro (especificar)</option>
+            </select>
+            <input id="categoria-custom" class="input" placeholder="Especificar categoria personalizada"
+              style="margin-top:8px; display:none" />
+          </div>
+          <div>
+            <label class="label" for="estilo" id="label-estilo">Estilo</label>
+            <select id="estilo" class="input" aria-labelledby="label-estilo" required>
+              <option value="">— Selecione um estilo —</option>
+              <option value="Realismo mágico">Realismo mágico</option>
+              <option value="Cinematográfico">Cinematográfico</option>
+              <option value="Fashion editorial">Fashion editorial</option>
+              <option value="Retro vintage">Retro vintage</option>
+              <option value="Minimalista">Minimalista</option>
+              <option value="Glamour">Glamour</option>
+              <option value="Natural">Natural</option>
+              <option value="Artístico">Artístico</option>
+              <option value="Dramático">Dramático</option>
+              <option value="Suave">Suave</option>
+              <option value="Contemporâneo">Contemporâneo</option>
+              <option value="Clássico">Clássico</option>
+              <option value="Moderno">Moderno</option>
+              <option value="Romântico">Romântico</option>
+              <option value="Elegante">Elegante</option>
+              <option value="Casual">Casual</option>
+              <option value="Outro">Outro (especificar)</option>
+            </select>
+            <input id="estilo-custom" class="input" placeholder="Especificar estilo personalizado"
+              style="margin-top:8px; display:none" />
+          </div>
+        </fieldset>
+
+        <div style="margin-top:16px" role="group" aria-label="Opções de áudio e narração">
+          <h3 class="section-title" style="font-size:15px; margin-bottom:12px">Tipo de Áudio</h3>
+          <div class="audio-grid"
+            style="display:grid; grid-template-columns:1fr; gap:var(--space-lg); margin-bottom:var(--space-lg)">
+
+            <!-- Som -->
+            <div class="card" style="padding:12px">
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin-bottom:8px" for="som">
+                <input type="checkbox" id="som" aria-describedby="desc-som" />
+                <span style="font-weight:600" id="desc-som">Som</span>
+              </label>
+              <div id="wrapSomUpload" style="display:none; margin-top:8px">
+                <label class="label" style="margin:0; font-size:12px" for="somFile">Upload MP3
+                  (opcional)</label>
+                <input id="somFile" type="file" accept="audio/mp3,audio/*" class="input" style="font-size:12px"
+                  aria-label="Selecionar arquivo de áudio MP3" />
+                <div class="muted" style="font-size:11px; margin-top:4px">Máx: 50MB • Formatos: MP3,
+                  WAV, M4A</div>
+              </div>
+            </div>
+
+            <!-- Narração -->
+            <div class="card" style="padding:12px">
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin-bottom:8px"
+                for="narracao">
+                <input type="checkbox" id="narracao" aria-describedby="desc-narracao" />
+                <span style="font-weight:600" id="desc-narracao">Narração</span>
+              </label>
+              <div id="wrapNarracaoUpload" style="display:none; margin-top:8px">
+                <label class="label" style="margin:0; font-size:12px" for="narracaoFile">Upload MP3
+                  (opcional)</label>
+                <input id="narracaoFile" type="file" accept="audio/mp3,audio/*" class="input" style="font-size:12px"
+                  aria-label="Selecionar arquivo de narração MP3" />
+                <div class="muted" style="font-size:11px; margin-top:4px">Máx: 50MB • Formatos: MP3,
+                  WAV, M4A</div>
+              </div>
+            </div>
+
+            <!-- Som + Narração -->
+            <div class="card" style="padding:12px">
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin-bottom:8px"
+                for="somNarracao">
+                <input type="checkbox" id="somNarracao" aria-describedby="desc-som-narracao" />
+                <span style="font-weight:600" id="desc-som-narracao">Som + Narração</span>
+              </label>
+              <div id="wrapSomNarracaoUpload" style="display:none; margin-top:8px">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px">
+                  <div>
+                    <label class="label" style="margin:0; font-size:12px" for="somNarracaoSomFile">Som MP3</label>
+                    <input id="somNarracaoSomFile" type="file" accept="audio/mp3,audio/*" class="input"
+                      style="font-size:12px" aria-label="Selecionar arquivo de som MP3" />
+                  </div>
+                  <div>
+                    <label class="label" style="margin:0; font-size:12px" for="somNarracaoNarrFile">Narração MP3</label>
+                    <input id="somNarracaoNarrFile" type="file" accept="audio/mp3,audio/*" class="input"
+                      style="font-size:12px" aria-label="Selecionar arquivo de narração MP3" />
+                  </div>
+                </div>
+                <div class="muted" style="font-size:11px; margin-top:4px">Máx: 50MB cada • Formatos:
+                  MP3, WAV, M4A</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Configurações de Diálogo (aparece quando Narração ou Som + Narração está ativo) -->
+          <div id="dialogoConfig" class="hidden" style="margin-top:16px">
+            <div class="card" style="padding:16px; margin-bottom:16px">
+              <h4 class="section-title" style="margin:0 0 12px 0; font-size:14px">Configurações de Diálogo</h4>
+
+              <!-- Configurações básicas -->
+              <div style="display:flex; flex-wrap:wrap; gap:16px; align-items:center; margin-bottom:16px" role="group"
+                aria-label="Configurações básicas de diálogo">
+                <div id="wrapNumChars" style="display:flex; align-items:center; gap:8px">
+                  <label class="label" style="margin:0" for="numChars">Nº de Personagens</label>
+                  <input id="numChars" class="input" style="width:90px" type="number" min="1" max="8" value="2"
+                    aria-label="Número de personagens" />
+                </div>
+                <div style="display:flex; align-items:center; gap:8px">
+                  <label class="label" style="margin:0" for="tonalidade">Tonalidade</label>
+                  <select id="tonalidade" class="input" aria-label="Tonalidade">
+                    <option>Humorístico</option>
+                    <option>Dramático</option>
+                    <option>Sério</option>
+                    <option>Inspirador</option>
+                    <option>Romântico</option>
+                    <option>Tenso</option>
+                    <option>Suave</option>
+                  </select>
+                </div>
+                <div id="wrapVozGlobal" style="display:flex; align-items:center; gap:8px">
+                  <label class="label" style="margin:0" for="vozGlobal">Voz (global)</label>
+                  <select id="vozGlobal" class="input" style="min-width:200px"
+                    aria-label="Selecionar voz global"></select>
+                  <button id="btnNewVoiceFromGlobal" class="btn small" type="button" aria-label="Criar nova voz">
+                    <span aria-hidden="true">➕</span> Criar Nova Voz
+                  </button>
+                </div>
+              </div>
+
+              <!-- Opções de entrada de texto -->
+              <div style="margin-bottom:16px">
+                <h5 style="margin:0 0 8px 0; font-size:13px; font-weight:600">Opções de Entrada</h5>
+                <div style="display:flex; flex-wrap:wrap; gap:16px; align-items:center">
+                  <label style="display:flex; align-items:center; gap:8px; cursor:pointer">
+                    <input type="radio" name="entradaTipo" id="entradaTexto" value="texto" checked />
+                    <span style="font-size:13px">Texto</span>
+                  </label>
+                  <label style="display:flex; align-items:center; gap:8px; cursor:pointer">
+                    <input type="radio" name="entradaTipo" id="entradaArquivo" value="arquivo" />
+                    <span style="font-size:13px">Enviar Arquivo</span>
+                  </label>
+                </div>
+
+                <!-- Área de upload de arquivo (inicialmente oculta) -->
+                <div id="wrapArquivoEntrada" style="display:none; margin-top:12px">
+                  <label class="label" style="margin:0 0 6px 0; font-size:12px" for="arquivoEntrada">Arquivo de
+                    Entrada</label>
+                  <input id="arquivoEntrada" type="file" accept=".txt,.doc,.docx,.pdf" class="input"
+                    style="font-size:12px" aria-label="Selecionar arquivo de entrada" />
+                  <div class="muted" style="font-size:11px; margin-top:4px">Formatos: TXT, DOC, DOCX, PDF • Máx: 10MB
+                  </div>
+                </div>
+              </div>
+
+              <!-- Opções de processamento de voz -->
+              <div>
+                <h5 style="margin:0 0 8px 0; font-size:13px; font-weight:600">Opções de Processamento</h5>
+                <div style="display:flex; flex-wrap:wrap; gap:16px; align-items:center">
+                  <label style="display:flex; align-items:center; gap:8px; cursor:pointer">
+                    <input type="checkbox" id="clonarVoz" />
+                    <span style="font-size:13px">Clonar Voz</span>
+                  </label>
+                  <label style="display:flex; align-items:center; gap:8px; cursor:pointer">
+                    <input type="checkbox" id="aplicarAudio" />
+                    <span style="font-size:13px">Aplicar Áudio</span>
+                  </label>
+                </div>
+                <div class="muted" style="font-size:11px; margin-top:6px">
+                  <strong>Clonar Voz:</strong> Gera voz baseada no texto fornecido<br>
+                  <strong>Aplicar Áudio:</strong> Usa arquivo de áudio fornecido
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="divider" role="separator" aria-hidden="true" />
+
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px">
+          <h3 class="section-title" style="font-size:15px">Campos Personalizáveis</h3>
+          <button class="btn" id="btnAddField" type="button" aria-label="Adicionar novo campo personalizado">
+            <span aria-hidden="true">➕</span> Criar Novo Campo
+          </button>
+        </div>
+        <div id="customFields" class="grid-auto" aria-live="polite" role="region" aria-label="Campos personalizados">
+        </div>
+        <div id="noCustomFields" class="muted" role="status">Nenhum campo extra. Clique em "Criar Novo Campo"
+          para adicionar.</div>
+
+        <div id="dialogoArea" class="hidden" aria-live="polite" role="region" aria-labelledby="dialogue-title">
+          <hr class="divider" />
+          <h3 id="dialogue-title" class="section-title" style="font-size:15px">Falas dos Personagens (aparece
+            quando Narração ou Som + Narração está ativado)</h3>
+          <div id="dupWarn" class="muted hidden"
+            style="background:#fffbeb; border:1px solid #fde68a; color:#92400e; padding:8px 10px; border-radius:10px; font-size:12px; margin-bottom:8px"
+            role="alert">
+            ⚠️ Atenção: vozes repetidas entre personagens selecionados.
+          </div>
+          <div id="dialogues" class="grid-auto" role="group" aria-label="Configuração de personagens"></div>
+        </div>
+
+        <hr class="divider" />
+
+        <fieldset class="card" style="padding:12px" aria-labelledby="send-title">
+          <legend id="send-title" class="section-title" style="font-size:15px">Envio ao Webhook</legend>
+          <p class="muted" id="send-hint">Informe o endpoint do seu N8N (Webhook Node).</p>
+
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap">
+            <label class="label" style="margin:0" for="webhookUrl">Webhook URL</label>
+            <input id="webhookUrl" class="input" type="url" placeholder="https://seu-n8n/webhook/entrada"
+              aria-describedby="send-hint" />
+            <button id="btnTestUrl" class="btn" type="button" title="Faz uma requisição HEAD">Testar
+              URL</button>
+            <button id="btnSaveWebhook" class="btn" type="button" title="Salvar URL como favorito">Salvar
+              Webhook</button>
+            <button id="btnOpenWebhooks" class="btn" type="button"
+              title="Abrir biblioteca de webhooks">Biblioteca</button>
+          </div>
+
+          <div style="display:flex; gap:8px; align-items:center; margin-top:8px">
+            <label class="label" style="margin:0" for="triggerKey">Gatilho</label>
+            <input id="triggerKey" class="input" placeholder="ex.: criar_projeto, publicar_video"
+              aria-label="Chave do gatilho" />
+          </div>
+
+          <div style="display:flex; gap:8px; align-items:center; margin-top:8px; flex-wrap:wrap">
+            <label class="label" style="margin-left:12px; margin-right:0" for="httpMethod">Método</label>
+            <select id="httpMethod" class="input" style="width:140px" aria-label="Método HTTP">
+              <option value="POST">POST</option>
+              <option value="GET">GET</option>
+            </select>
+            <label class="label" style="margin-left:12px; margin-right:0" for="timeoutSecs">Timeout
+              (s)</label>
+            <input id="timeoutSecs" type="number" class="input" style="width:120px" value="20" min="5" max="120"
+              aria-label="Timeout em segundos" />
+            <label class="label" style="margin-left:12px; margin-right:0" for="retries">Retries</label>
+            <input id="retries" type="number" class="input" style="width:100px" value="0" min="0" max="3"
+              aria-label="Número de tentativas em erro" />
+            <label style="display:flex; gap:8px; align-items:center; cursor:pointer">
+              <input id="useBackoff" type="checkbox" /> Backoff exponencial
+            </label>
+          </div>
+
+          <details class="mt-headers" style="margin-top:10px">
+            <summary class="muted" aria-label="Cabeçalhos opcionais">Cabeçalhos (JSON) — opcional</summary>
+            <div style="display:flex; gap:8px; align-items:flex-start; margin-top:8px; flex-wrap:wrap">
+              <textarea id="headersJson" class="input" rows="4" style="flex:1 1 360px"
+                placeholder='{"Authorization":"Bearer ..."}' aria-label="Cabeçalhos HTTP em formato JSON"></textarea>
+              <div style="display:flex; gap:8px; align-items:center">
+                <button id="btnFmtHeaders" class="btn" type="button"
+                  title="Validar e formatar JSON">Validar/Formatar</button>
+                <button id="btnClearHeaders" class="btn" type="button" title="Limpar cabeçalhos">Limpar</button>
+              </div>
+            </div>
+          </details>
+
+          <label style="display:flex; gap:8px; align-items:center; margin-top:8px; cursor:pointer" for="enviarWebhook">
+            <input type="checkbox" id="enviarWebhook" />
+            <span class="muted">Enviar automaticamente ao Webhook</span>
+          </label>
+
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px" role="group"
+            aria-label="Ações principais">
+            <button id="btnGerar" class="btn prim" type="button" title="Atalho: Ctrl+Enter"
+              aria-describedby="shortcuts-desc">
+              <span aria-hidden="true">🚀</span> Gerar/Enviar Payload
+            </button>
+            <button id="btnSaveQuick" class="btn" type="button" aria-label="Salvar estado atual">
+              <span aria-hidden="true">💾</span> Salvar Estado Rápido
+            </button>
+            <button id="btnLoadQuick" class="btn" type="button" aria-label="Carregar estado salvo">
+              <span aria-hidden="true">📂</span> Carregar Estado Rápido
+            </button>
+            <button id="btnResetForm" class="btn" type="button" aria-label="Resetar formulário">
+              <span aria-hidden="true">🔄</span> Resetar Formulário
+            </button>
+          </div>
+
+          <p class="muted" style="margin-top:8px" id="shortcuts-desc">
+            Atalhos: <kbd class="kbd">Ctrl</kbd>+<kbd class="kbd">Enter</kbd> enviar •
+            <kbd class="kbd">Alt</kbd>+<kbd class="kbd">S</kbd> configurações •
+            <kbd class="kbd">/</kbd> focar Tema
+          </p>
+        </fieldset>
+      </form>
+    </section>
+
+    <aside class="card" aria-live="polite" role="complementary">
+      <h2 class="section-title">Preview do Payload</h2>
+      <pre id="payloadPreview"
+        style="font-size:12px; white-space:pre-wrap; word-break:break-word; background:color-mix(in oklab, var(--border) 22%, var(--card)); border:1px solid var(--border); border-radius:10px; padding:12px; max-height:300px; overflow:auto"
+        role="region" aria-label="Preview do payload JSON"></pre>
+
+      <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap" role="group" aria-label="Ações do payload">
+        <button id="btnCopyPayload" class="btn" type="button" aria-label="Copiar payload para área de transferência">
+          <span aria-hidden="true">📋</span> Copiar Payload
+        </button>
+        <button id="btnCopyPayloadMin" class="btn" type="button" aria-label="Copiar payload mínimo">
+          <span aria-hidden="true">🧩</span> Copiar Payload (min)
+        </button>
+        <button id="btnDownloadPayload" class="btn" type="button" aria-label="Baixar payload como arquivo JSON">
+          <span aria-hidden="true">⬇️</span> Baixar JSON
+        </button>
+        <label class="btn" title="Carregar arquivo JSON para o preview" style="cursor:pointer">
+          <input id="btnLoadPayloadFile" type="file" accept="application/json" style="display:none" />
+          <span aria-hidden="true">📥</span> Carregar JSON
+        </label>
+        <button id="btnCopyCurl" class="btn" type="button" aria-label="Copiar comando cURL">
+          <span aria-hidden="true">🔗</span> Copiar cURL
+        </button>
+      </div>
+
+      <hr class="divider" />
+
+      <h2 class="section-title">Resposta do Webhook</h2>
+      <div class="muted" id="webhookMeta" style="font-size:12px" role="status" aria-live="polite">Sem envio ainda.
+      </div>
+      <pre id="webhookResponse"
+        style="font-size:12px; white-space:pre-wrap; word-break:break-word; background:color-mix(in oklab, var(--border) 22%, var(--card)); border:1px solid var(--border); border-radius:10px; padding:12px; max-height:240px; overflow:auto"
+        role="region" aria-label="Resposta do webhook"></pre>
+
+      <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap" role="group" aria-label="Ações da resposta">
+        <button id="btnCopyResponse" class="btn" type="button" aria-label="Copiar resposta para área de transferência">
+          <span aria-hidden="true">📋</span> Copiar Resposta
+        </button>
+        <button id="btnClearResponse" class="btn" type="button" aria-label="Limpar resposta">
+          <span aria-hidden="true">🗑️</span> Limpar
+        </button>
+      </div>
+
+      <hr class="divider" />
+
+      <h2 class="section-title">Biblioteca de Vozes</h2>
+      <p class="muted" style="margin-bottom:8px">Upload opcional (base64), renomear e excluir. Usado na voz global
+        ou por personagem.</p>
+      <div id="voicesList" class="grid-auto" role="region" aria-label="Lista de vozes"></div>
+      <button id="btnNewVoice" class="btn" type="button" style="width:100%; margin-top:8px" aria-label="Criar nova voz">
+        <span aria-hidden="true">🎤</span> Criar Nova Voz
+      </button>
+    </aside>
+  </main>
+
+  <!-- Modais -->
+  <div class="modal" id="modalWebhooks" role="dialog" aria-modal="true" aria-labelledby="webhooks-title">
+    <div class="box">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:8px">
+        <h3 id="webhooks-title" class="section-title">Biblioteca de Webhooks</h3>
+        <button class="btn" data-close="#modalWebhooks" type="button" aria-label="Fechar modal">✕</button>
+      </div>
+      <div class="row thirds">
+        <div>
+          <label class="label" for="wh_name">Nome</label>
+          <input id="wh_name" class="input" placeholder="Ex.: Produção Kling" />
+        </div>
+        <div>
+          <label class="label" for="wh_url">URL</label>
+          <input id="wh_url" class="input" placeholder="https://.../webhook/..." />
+        </div>
+        <label style="display:flex; gap:8px; align-items:center; align-self:end">
+          <input type="checkbox" id="wh_isGet" /> GET
+        </label>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px">
+        <button id="wh_add" class="btn prim" type="button">Adicionar</button>
+      </div>
+      <div id="wh_list" class="grid-auto" style="margin-top:10px"></div>
+    </div>
+  </div>
+  <div class="modal" id="modalVoice" role="dialog" aria-modal="true" aria-labelledby="voice-title">
+    <div class="box">
+      <header style="display:flex; align-items:center; justify-content:space-between; gap:8px">
+        <h3 id="voice-title" class="section-title">Criar Nova Voz</h3>
+        <button class="btn" data-close="#modalVoice" type="button" aria-label="Fechar modal">✕</button>
+      </header>
+
+      <form id="voiceForm">
+        <fieldset class="row">
+          <div>
+            <label class="label" for="nv_name">Nome da voz</label>
+            <input id="nv_name" class="input" placeholder="Ex.: female_silky" required aria-label="Nome da nova voz" />
+          </div>
+          <div>
+            <label class="label" for="nv_file">Arquivo de voz (opcional)</label>
+            <input id="nv_file" type="file" accept="audio/*" aria-label="Selecionar arquivo de áudio" />
+          </div>
+        </fieldset>
+
+        <footer style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px">
+          <button class="btn" data-close="#modalVoice" type="button">Cancelar</button>
+          <button id="nv_save" class="btn prim" type="button">Salvar Voz</button>
+        </footer>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="modalField" role="dialog" aria-modal="true" aria-labelledby="field-title">
+    <div class="box">
+      <header style="display:flex; align-items:center; justify-content:space-between; gap:8px">
+        <h3 id="field-title" class="section-title">Criar Novo Campo</h3>
+        <button class="btn" data-close="#modalField" type="button" aria-label="Fechar modal">✕</button>
+      </header>
+
+      <form id="fieldForm">
+        <fieldset class="row thirds">
+          <div>
+            <label class="label" for="cf_label">Rótulo</label>
+            <input id="cf_label" class="input" required aria-label="Rótulo do campo" />
+          </div>
+          <div>
+            <label class="label" for="cf_type">Tipo</label>
+            <select id="cf_type" class="input" aria-label="Tipo do campo">
+              <option value="text">Texto</option>
+              <option value="textarea">Texto longo</option>
+              <option value="number">Número</option>
+              <option value="checkbox">Checkbox</option>
+              <option value="dropdown">Dropdown</option>
+              <option value="voice">Voz (da biblioteca)</option>
+              <option value="upload">Upload</option>
+            </select>
+          </div>
+          <label style="display:flex; gap:8px; align-items:center; align-self:end">
+            <input type="checkbox" id="cf_required" aria-label="Campo obrigatório" />
+            <span>Obrigatório</span>
+          </label>
+        </fieldset>
+
+        <div id="cf_opts_wrap" style="display:none; margin-top:8px">
+          <label class="label" for="cf_options">Opções (separadas por vírgula)</label>
+          <input id="cf_options" class="input" placeholder="Ex.: Opção A, Opção B" aria-label="Opções do dropdown" />
+        </div>
+        <div id="cf_upload_wrap" style="display:none; margin-top:8px; display:none">
+          <div class="row thirds">
+            <div>
+              <label class="label" for="cf_upload_max">Tamanho máx. (MB)</label>
+              <input id="cf_upload_max" class="input" type="number" min="1" max="200" value="10"
+                aria-label="Tamanho máximo do arquivo em MB" />
+            </div>
+            <label style="display:flex; gap:8px; align-items:center; align-self:end">
+              <input type="checkbox" id="cf_upload_multi" checked /> Vários arquivos
+            </label>
+          </div>
+          <div class="muted" style="font-size:11px">Imagens serão convertidas para Base64 automaticamente no
+            envio.</div>
+        </div>
+        <div id="cf_bulk_wrap" style="margin-top:8px">
+          <label class="label" for="cf_bulk">Criar em lote (um rótulo por linha)</label>
+          <textarea id="cf_bulk" class="input" rows="3" placeholder="Ex.:\nItem 1\nItem 2\nItem 3"
+            aria-label="Criação em lote de campos"></textarea>
+          <div class="muted" style="font-size:11px; margin-top:4px">Se preencher, os rótulos acima serão
+            criados como múltiplos campos deste mesmo tipo. O campo único 'Rótulo' será ignorado.</div>
+        </div>
+
+        <footer style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px">
+          <button class="btn" data-close="#modalField" type="button">Cancelar</button>
+          <button id="cf_add" class="btn prim" type="button">Adicionar</button>
+        </footer>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="modalSettings" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+    <div class="box">
+      <header style="display:flex; align-items:center; justify-content:space-between; gap:8px">
+        <h3 id="settings-title" class="section-title">Configurações & Acessibilidade</h3>
+        <button class="btn" data-close="#modalSettings" type="button" aria-label="Fechar modal">✕</button>
+      </header>
+
+      <form id="settingsForm">
+        <fieldset class="row thirds">
+          <div>
+            <label class="label" for="prefTheme">Tema</label>
+            <select id="prefTheme" class="input" aria-label="Tema da interface">
+              <option value="auto">Automático (sistema)</option>
+              <option value="light">Claro</option>
+              <option value="dark">Escuro</option>
+              <option value="tech">Tech (preto → verde)</option>
+              <option value="purple">Roxo</option>
+              <option value="green">Verde</option>
+              <option value="orange">Laranja</option>
+            </select>
+          </div>
+          <div>
+            <label class="label" for="prefContrast">Contraste</label>
+            <select id="prefContrast" class="input" aria-label="Nível de contraste">
+              <option value="normal">Normal</option>
+              <option value="high">Alto contraste</option>
+            </select>
+          </div>
+          <div>
+            <label class="label" for="prefSize">Tamanho</label>
+            <select id="prefSize" class="input" aria-label="Tamanho da interface">
+              <option value="normal">Normal</option>
+              <option value="compact">Compacto</option>
+              <option value="large">Grande</option>
+            </select>
+          </div>
+        </fieldset>
+
+        <fieldset class="row">
+          <div>
+            <label class="label" for="prefScale">Escala da interface</label>
+            <input id="prefScale" type="range" min="0.8" max="1.4" step="0.05" value="1" class="input"
+              aria-label="Escala da interface" />
+            <div class="muted" style="font-size:12px; margin-top:4px">Valor atual: <span id="scaleValue">1.0</span>
+            </div>
+          </div>
+          <div>
+            <label class="label" for="prefBgPreset">Plano de fundo</label>
+            <select id="prefBgPreset" class="input" aria-label="Plano de fundo">
+              <option value="mesh">Tecnológico (mesh)</option>
+              <option value="radial">Radial verde</option>
+              <option value="waves">Ondas</option>
+              <option value="grid">Grade sutil</option>
+              <option value="none">Sem fundo</option>
+            </select>
+            <div class="muted" style="font-size:12px; margin-top:4px">Presets • ou use o personalizado abaixo</div>
+          </div>
+          <div>
+            <label class="label" for="prefBgCustom">Fundo personalizado (CSS)</label>
+            <input id="prefBgCustom" class="input" placeholder="Ex.: linear-gradient(...), url(...)">
+            <div class="muted" style="font-size:12px; margin-top:4px">Aceita qualquer valor CSS válido de background</div>
+          </div>
+        </fieldset>
+
+        <div style="display:flex; gap:14px; flex-wrap:wrap; margin-top:10px" role="group"
+          aria-label="Preferências de acessibilidade">
+          <label style="display:flex; gap:8px; align-items:center">
+            <input id="prefReduceMotion" type="checkbox" aria-label="Reduzir animações" />
+            <span>Reduzir animações</span>
+          </label>
+          <label style="display:flex; gap:8px; align-items:center">
+            <input id="prefCompact" type="checkbox" aria-label="Layout compacto" />
+            <span>Layout compacto</span>
+          </label>
+          <label style="display:flex; gap:8px; align-items:center">
+            <input id="prefShortcuts" type="checkbox" checked aria-label="Atalhos de teclado" />
+            <span>Atalhos de teclado</span>
+          </label>
+          <label style="display:flex; gap:8px; align-items:center">
+            <input id="prefMonoPre" type="checkbox" aria-label="Fonte monoespaçada nos previews" />
+            <span>Fonte monoespaçada nos previews</span>
+          </label>
+        </div>
+
+        <footer style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px">
+          <button class="btn" data-close="#modalSettings" type="button">Fechar</button>
+          <button id="btnResetPrefs" class="btn" type="button" aria-label="Restaurar configurações padrão">Restaurar
+            padrões</button>
+        </footer>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="modalSavePreset" role="dialog" aria-modal="true" aria-labelledby="save-title">
+    <div class="box">
+      <header style="display:flex; align-items:center; justify-content:space-between; gap:8px">
+        <h3 id="save-title" class="section-title">Salvar Preset</h3>
+        <button class="btn" data-close="#modalSavePreset" type="button" aria-label="Fechar modal">✕</button>
+      </header>
+
+      <form id="presetForm">
+        <fieldset class="row">
+          <div>
+            <label class="label" for="sp_name">Nome</label>
+            <input id="sp_name" class="input" placeholder="Ex.: Glow-up 2 personagens" required
+              aria-label="Nome do preset" />
+          </div>
+        </fieldset>
+
+        <footer style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px">
+          <button class="btn" data-close="#modalSavePreset" type="button">Cancelar</button>
+          <button id="sp_save" class="btn prim" type="button">Salvar</button>
+        </footer>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="modalLoadPreset" role="dialog" aria-modal="true" aria-labelledby="load-title">
+    <div class="box">
+      <header style="display:flex; align-items:center; justify-content:space-between; gap:8px">
+        <h3 id="load-title" class="section-title">Carregar Preset</h3>
+        <button class="btn" data-close="#modalLoadPreset" type="button" aria-label="Fechar modal">✕</button>
+      </header>
+
+      <div style="display:flex; gap:8px; align-items:center">
+        <input id="lp_search" class="input" placeholder="Buscar pelo nome…" aria-label="Buscar presets" />
+        <label class="btn" style="cursor:pointer" for="lp_import" aria-label="Importar preset de arquivo">
+          <span aria-hidden="true">📂</span> Importar JSON
+          <input id="lp_import" type="file" accept="application/json" style="display:none" />
+        </label>
+      </div>
+      <div id="lp_list" class="grid-auto" style="margin-top:10px" role="region" aria-label="Lista de presets">
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="assertive"></div>
+  <div id="live" class="sr-only" aria-live="polite"></div>
+
+  <!-- ==== FIM DA PARTE 1 — COLE A PARTE 2 A PARTIR DA TAG <script> ABAIXO ==== -->
+  <script>
+    /* ========= Webhook UI — Falas sob Seleção (Parte 2) ========= */
+    (function () {
+      'use strict';
+
+      /* ==================== UTILIDADES ==================== */
+      const SELECTORS = {
+        tema: '#tema',
+        temaCustom: '#tema-custom',
+        categoria: '#categoria',
+        categoriaCustom: '#categoria-custom',
+        estilo: '#estilo',
+        estiloCustom: '#estilo-custom',
+        som: '#som',
+        narracao: '#narracao',
+        somNarracao: '#somNarracao',
+        somFile: '#somFile',
+        narracaoFile: '#narracaoFile',
+        somNarracaoSomFile: '#somNarracaoSomFile',
+        somNarracaoNarrFile: '#somNarracaoNarrFile',
+        wrapSomUpload: '#wrapSomUpload',
+        wrapNarracaoUpload: '#wrapNarracaoUpload',
+        wrapSomNarracaoUpload: '#wrapSomNarracaoUpload',
+        dialogoConfig: '#dialogoConfig',
+        numChars: '#numChars',
+        tonalidade: '#tonalidade',
+        vozGlobal: '#vozGlobal',
+        entradaTexto: '#entradaTexto',
+        entradaArquivo: '#entradaArquivo',
+        wrapArquivoEntrada: '#wrapArquivoEntrada',
+        arquivoEntrada: '#arquivoEntrada',
+        clonarVoz: '#clonarVoz',
+        aplicarAudio: '#aplicarAudio',
+        webhookUrl: '#webhookUrl',
+        triggerKey: '#triggerKey',
+        httpMethod: '#httpMethod',
+        timeoutSecs: '#timeoutSecs',
+        retries: '#retries',
+        useBackoff: '#useBackoff',
+        headersJson: '#headersJson',
+        enviarWebhook: '#enviarWebhook',
+        payloadPreview: '#payloadPreview',
+        webhookResponse: '#webhookResponse',
+        webhookMeta: '#webhookMeta',
+        voicesList: '#voicesList',
+        customFields: '#customFields',
+        noCustomFields: '#noCustomFields',
+        dialogues: '#dialogues',
+        dialogoArea: '#dialogoArea',
+        dupWarn: '#dupWarn',
+        wrapVozGlobal: '#wrapVozGlobal',
+        toast: '#toast'
+      };
+
+      const STORAGE_KEYS = {
+        voices: 'aztra_voices_v1',
+        presets: 'aztra_presets_v2',
+        quick: 'aztra_preset_v1',
+        prefs: 'aztra_prefs_v1',
+        lastResponse: 'aztra_last_response_v1',
+        webhooks: 'aztra_webhooks_v1'
+      };
+
+      const utils = {
+        $: (sel, el = document) => el.querySelector(sel),
+        $$: (sel, el = document) => Array.from(el.querySelectorAll(sel)),
+        uid: () => Math.random().toString(36).slice(2, 10),
+        nowISO: () => new Date().toISOString(),
+        debounce(fn, ms = 600) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; },
+        isValidUrl(url) { try { const u = new URL(url); return !!u.protocol && !!u.host; } catch { return false; } },
+        fileToBase64(file) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(file); }); },
+        safeParseHeaders(text) {
+          try {
+            if (!text || !text.trim()) return {};
+            let s = text.trim();
+            if (s[0] === '{' || s[0] === '[') {
+              s = s.replace(/,\s*([}\]])/g, '$1').replace(/'([^']*)'/g, '"$1"');
+              try { return JSON.parse(s); } catch { }
+            }
+            const obj = {};
+            s.split(/\r?\n/).map(l => l.trim()).filter(Boolean).forEach(line => {
+              const idx = line.indexOf(':');
+              if (idx > 0) { const k = line.slice(0, idx).trim(); const v = line.slice(idx + 1).trim(); if (k) obj[k] = v; }
+            });
+            return obj;
+          } catch { return null; }
+        },
+        toast(message, type = 'info') {
+          const el = utils.$(SELECTORS.toast);
+          const colors = { success: '#10b981', error: '#ef4444', warning: '#f59e0b', info: '#0f172a' };
+          el.textContent = message;
+          el.style.background = colors[type] || colors.info;
+          el.style.display = 'block';
+          clearTimeout(el._to);
+          el._to = setTimeout(() => { el.style.display = 'none'; }, 4000);
+        }
+      };
+
+      const storage = {
+        get: (k, d = null) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
+        set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch { } },
+        remove: (k) => { try { localStorage.removeItem(k); } catch { } }
+      };
+
+      /* ==================== ESTADO ==================== */
+      const state = {
+        tema: '', categoria: '', estilo: '',
+        som: false, narracao: false, somNarracao: false,
+        somFile: null, narracaoFile: null, somNarracaoSomFile: null, somNarracaoNarrFile: null,
+        dialogo: false,
+        numChars: 2,
+        tonalidade: 'Humorístico',
+        triggerKey: '',
+        vozGlobal: '',
+        entradaTipo: 'texto',
+        arquivoEntrada: null,
+        clonarVoz: false,
+        aplicarAudio: false,
+        enviarWebhook: false,
+        webhookUrl: '',
+        httpMethod: 'POST',
+        timeoutSecs: 20,
+        retries: 0,
+        useBackoff: false,
+        headersJson: '',
+        voices: [],
+        dialogues: [
+          { id: utils.uid(), name: 'Personagem 1', text: '', voiceId: '', active: false },
+          { id: utils.uid(), name: 'Personagem 2', text: '', voiceId: '', active: false }
+        ],
+        customFields: []
+      };
+
+      const prefs = { theme: 'auto', contrast: 'normal', scale: 1, size: 'normal', reduceMotion: false, compact: false, shortcuts: true, monoPre: false };
+
+      const defaultVoices = [
+        { id: utils.uid(), name: 'female_warm', src: null },
+        { id: utils.uid(), name: 'female_bright', src: null },
+        { id: utils.uid(), name: 'male_deep', src: null },
+        { id: utils.uid(), name: 'narrator_soft', src: null }
+      ];
+
+      /* ==================== PREFERÊNCIAS ==================== */
+      const preferences = {
+        load: () => Object.assign(prefs, storage.get(STORAGE_KEYS.prefs, {})),
+        save: () => storage.set(STORAGE_KEYS.prefs, prefs),
+        apply: () => {
+          const root = document.documentElement;
+          const theme = prefs.theme === 'auto' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : prefs.theme;
+          root.setAttribute('data-theme', theme);
+          root.setAttribute('data-contrast', prefs.contrast === 'high' ? 'high' : 'normal');
+          root.setAttribute('data-size', prefs.size || 'normal');
+          // aplicar preset de background
+          root.setAttribute('data-bg', prefs.bgPreset || 'mesh');
+          if (prefs.bgCustom) {
+            root.style.setProperty('--app-bg', prefs.bgCustom);
+          }
+          root.style.setProperty('--font-scale', prefs.scale);
+          const preStyle = prefs.monoPre ? 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace' : '';
+          utils.$$('#payloadPreview, #webhookResponse').forEach(p => p.style.fontFamily = preStyle);
+
+          // Reflect in form
+          const byId = id => utils.$(id);
+          if (byId('#prefTheme')) byId('#prefTheme').value = prefs.theme;
+          if (byId('#prefBgPreset')) byId('#prefBgPreset').value = prefs.bgPreset || 'mesh';
+          if (byId('#prefBgCustom')) byId('#prefBgCustom').value = prefs.bgCustom || '';
+          if (byId('#prefContrast')) byId('#prefContrast').value = prefs.contrast;
+          if (byId('#prefSize')) byId('#prefSize').value = prefs.size || 'normal';
+          if (byId('#prefScale')) byId('#prefScale').value = prefs.scale;
+          if (byId('#scaleValue')) byId('#scaleValue').textContent = prefs.scale.toFixed(1);
+          if (byId('#prefReduceMotion')) byId('#prefReduceMotion').checked = !!prefs.reduceMotion;
+          if (byId('#prefCompact')) byId('#prefCompact').checked = !!prefs.compact;
+          if (byId('#prefShortcuts')) byId('#prefShortcuts').checked = !!prefs.shortcuts;
+          if (byId('#prefMonoPre')) byId('#prefMonoPre').checked = !!prefs.monoPre;
+        }
+      };
+
+      /* ==================== VOZES ==================== */
+      const voices = {
+        load: () => { state.voices = storage.get(STORAGE_KEYS.voices, defaultVoices); },
+        save: () => storage.set(STORAGE_KEYS.voices, state.voices),
+        renderOptions: (sel, value) => {
+          sel.innerHTML = '<option value="">— Selecionar —</option>' +
+            state.voices.map(v => `<option value="${v.id}">${v.name}</option>`).join('');
+          if (value) sel.value = value;
+        },
+        renderLibrary: () => {
+          const wrap = utils.$(SELECTORS.voicesList);
+          wrap.innerHTML = '';
+          state.voices.forEach(v => {
+            const card = document.createElement('div'); card.className = 'card'; card.style.padding = '12px';
+            card.innerHTML = `
+          <div style="display:flex; justify-content:space-between; gap:8px; align-items:center">
+            <input class="input" value="${v.name}" data-voice-name="${v.id}" aria-label="Renomear voz ${v.name}" />
+            <button class="btn small" data-voice-del="${v.id}" aria-label="Excluir voz ${v.name}">🗑️ Excluir</button>
+          </div>
+          ${v.src ? `<audio controls style="width:100%; margin-top:8px"><source src="${v.src}"></audio>` : '<div class="muted" style="margin-top:6px; font-size:12px">Sem áudio anexado.</div>'}
+        `;
+            wrap.appendChild(card);
+          });
+          utils.$$('input[data-voice-name]').forEach(inp => inp.addEventListener('input', utils.debounce(() => {
+            const id = inp.getAttribute('data-voice-name'); const vv = state.voices.find(x => x.id === id);
+            if (vv) { vv.name = inp.value; voices.save(); renderAll(); }
+          })));
+          utils.$$('button[data-voice-del]').forEach(btn => btn.addEventListener('click', () => {
+            const id = btn.getAttribute('data-voice-del');
+            if (!confirm('Excluir esta voz?')) return;
+            state.voices = state.voices.filter(x => x.id !== id);
+            if (state.vozGlobal === id) state.vozGlobal = '';
+            state.dialogues = state.dialogues.map(d => d.voiceId === id ? { ...d, voiceId: '' } : d);
+            voices.save(); renderAll();
+          }));
+        }
+      };
+
+      /* ==================== DIALOGUES ==================== */
+      function renderDialogues() {
+        const area = utils.$(SELECTORS.dialogoArea);
+        const wrap = utils.$(SELECTORS.dialogues);
+        const showDialogo = state.narracao || state.somNarracao;
+        area.classList.toggle('hidden', !showDialogo);
+        wrap.innerHTML = '';
+
+        const n = Math.max(1, Number(state.numChars) || 1);
+        if (state.dialogues.length < n) {
+          for (let i = 0; i < n - state.dialogues.length; i++) {
+            state.dialogues.push({ id: utils.uid(), name: `Personagem ${state.dialogues.length + 1}`, text: '', voiceId: '', active: false });
+          }
+        }
+        if (state.dialogues.length > n) state.dialogues = state.dialogues.slice(0, n);
+
+        const activeVoiceIds = state.dialogues.filter(d => d.active && d.voiceId).map(d => d.voiceId);
+        const hasDup = new Set(activeVoiceIds).size !== activeVoiceIds.length;
+        utils.$(SELECTORS.dupWarn).classList.toggle('hidden', !hasDup);
+
+        state.dialogues.forEach((d, idx) => {
+          const card = document.createElement('div'); card.className = 'card'; card.style.padding = '12px';
+          card.innerHTML = `
+        <div style="display:flex; gap:8px; margin-bottom:8px">
+          <input class="input" value="${d.name}" data-dname="${d.id}" placeholder="Personagem ${idx + 1}" aria-label="Nome do personagem ${idx + 1}"/>
+        </div>
+        <label style="display:flex; gap:8px; align-items:center; margin-bottom:8px">
+          <input type="checkbox" data-dactive="${d.id}" ${d.active ? 'checked' : ''}/> <span>Este personagem fala</span>
+        </label>
+        <div data-dfields="${d.id}" style="${d.active ? '' : 'display:none'}">
+          <div style="display:flex; gap:8px; margin-bottom:8px; align-items:center">
+            <label class="label" style="margin:0" for="voice_${d.id}">Voz</label>
+            <select class="input" id="voice_${d.id}" data-dvoice="${d.id}" aria-label="Voz do personagem"></select>
+            <button class="btn small" data-open="#modalVoice" type="button" aria-label="Criar nova voz">➕ Nova voz</button>
+          </div>
+          <div>
+            <label class="sr-only" for="dtext_${d.id}">Fala do personagem ${idx + 1}</label>
+            <textarea id="dtext_${d.id}" class="input" rows="4" maxlength="1000" data-dtext="${d.id}" data-counter="#cnt_${d.id}" placeholder="Escreva a fala aqui..." aria-label="Fala do personagem ${idx + 1}"></textarea>
+            <div class="muted" style="font-size:11px; text-align:right; margin-top:4px">
+              <span id="cnt_${d.id}">0</span>/1000
+            </div>
+          </div>
+        </div>
+      `;
+          wrap.appendChild(card);
+
+          const nameInp = card.querySelector(`[data-dname="${d.id}"]`);
+          const activeChk = card.querySelector(`[data-dactive="${d.id}"]`);
+          const textArea = card.querySelector(`[data-dtext="${d.id}"]`);
+          const voiceSel = card.querySelector(`[data-dvoice="${d.id}"]`);
+
+          nameInp.addEventListener('input', () => { d.name = nameInp.value; renderPayload(); });
+          activeChk.addEventListener('change', () => {
+            d.active = activeChk.checked;
+            const fields = card.querySelector(`[data-dfields="${d.id}"]`);
+            fields.style.display = d.active ? 'block' : 'none';
+            if (!d.active) { d.text = ''; d.voiceId = ''; }
+            renderPayload(); renderDialogues();
+          });
+
+          const updateCounter = () => {
+            const cntSel = textArea.getAttribute('data-counter');
+            const cnt = cntSel ? document.querySelector(cntSel) : null;
+            if (cnt) cnt.textContent = String(textArea.value.length);
+          };
+          textArea.value = d.text; updateCounter();
+          textArea.addEventListener('input', () => { d.text = textArea.value; updateCounter(); renderPayload(); });
+
+          voices.renderOptions(voiceSel, d.voiceId);
+          voiceSel.addEventListener('change', () => { d.voiceId = voiceSel.value; renderPayload(); renderDialogues(); });
+        });
+      }
+
+      /* ==================== CAMPOS CUSTOM ==================== */
+      const customFields = {
+        render: () => {
+          const wrap = utils.$(SELECTORS.customFields);
+          const empty = utils.$(SELECTORS.noCustomFields);
+          wrap.innerHTML = '';
+          empty.style.display = state.customFields.length ? 'none' : 'block';
+          state.customFields.forEach(cf => {
+            const card = document.createElement('div'); card.className = 'card'; card.style.padding = '12px';
+            card.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; margin-bottom:8px">
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap">
+              <input class="input" data-cf-label="${cf.id}" value="${cf.label}" style="max-width:280px" aria-label="Editar rótulo do campo"/>
+              <span class="muted" style="font-size:11px; font-weight:600">(${cf.type})</span>
+              <label style="display:flex; gap:6px; align-items:center; font-size:12px"><input type="checkbox" data-cf-required="${cf.id}" ${cf.required ? 'checked' : ''}/> obrigatório</label>
+            </div>
+            <div style="display:flex; gap:6px">
+              <button class="btn small" data-up="${cf.id}" aria-label="Mover campo para cima">↑</button>
+              <button class="btn small" data-down="${cf.id}" aria-label="Mover campo para baixo">↓</button>
+              <button class="btn small" data-del="${cf.id}" aria-label="Excluir campo ${cf.label}">🗑️ Excluir</button>
+            </div>
+          </div>
+          <div data-field="${cf.id}"></div>
+        `;
+            wrap.appendChild(card);
+
+            const host = card.querySelector(`[data-field="${cf.id}"]`);
+            const labelInp = card.querySelector(`[data-cf-label="${cf.id}"]`);
+            const reqInp = card.querySelector(`[data-cf-required="${cf.id}"]`);
+
+            labelInp.addEventListener('input', () => { cf.label = labelInp.value; customFields.render(); renderPayload(); });
+            reqInp.addEventListener('change', () => { cf.required = reqInp.checked; renderPayload(); });
+
+            if (cf.type === 'text') {
+              host.innerHTML = `<input class="input" value="${cf.value || ''}" aria-label="${cf.label}"/>`;
+              host.querySelector('input').addEventListener('input', e => { cf.value = e.target.value; renderPayload(); });
+            } else if (cf.type === 'textarea') {
+              host.innerHTML = `<textarea rows="3" class="input" aria-label="${cf.label}">${cf.value || ''}</textarea>`;
+              host.querySelector('textarea').addEventListener('input', e => { cf.value = e.target.value; renderPayload(); });
+            } else if (cf.type === 'number') {
+              host.innerHTML = `<input type="number" class="input" value="${cf.value ?? ''}" aria-label="${cf.label}"/>`;
+              host.querySelector('input').addEventListener('input', e => { cf.value = e.target.value; renderPayload(); });
+            } else if (cf.type === 'checkbox') {
+              host.innerHTML = `<label style="display:flex; gap:8px; align-items:center"><input type="checkbox" ${cf.value ? 'checked' : ''} aria-label="${cf.label}"/> <span>${cf.label}</span></label>`;
+              host.querySelector('input').addEventListener('change', e => { cf.value = e.target.checked; renderPayload(); });
+            } else if (cf.type === 'dropdown') {
+              const opts = (cf.options || []).map(o => `<option ${cf.value === o ? 'selected' : ''}>${o}</option>`).join('');
+              host.innerHTML = `<select class="input" aria-label="${cf.label}"><option value="">— Selecione —</option>${opts}</select>`;
+              host.querySelector('select').addEventListener('change', e => { cf.value = e.target.value; renderPayload(); });
+            } else if (cf.type === 'voice') {
+              host.innerHTML = `<select class="input" aria-label="${cf.label}"></select>`;
+              const sel = host.querySelector('select'); voices.renderOptions(sel, cf.value || ''); sel.addEventListener('change', e => { cf.value = e.target.value; renderPayload(); });
+            } else if (cf.type === 'upload') {
+              const multiple = cf.uploadMulti ? 'multiple' : '';
+              host.innerHTML = `
+            <input type="file" ${multiple} aria-label="${cf.label}" />
+            <div class="muted" style="font-size:11px; margin-top:4px">Máx: ${cf.uploadMaxMB || 10}MB por arquivo</div>
+          `;
+              const input = host.querySelector('input');
+              input.addEventListener('change', async e => {
+                const files = Array.from(e.target.files || []);
+                const maxBytes = (cf.uploadMaxMB || 10) * 1024 * 1024;
+                const results = [];
+                for (const f of files) {
+                  if (f.size > maxBytes) { utils.toast(`Arquivo excede ${cf.uploadMaxMB || 10}MB: ${f.name}`, 'warning'); continue; }
+                  if ((f.type || '').startsWith('image/')) {
+                    try { results.push(await utils.fileToBase64(f)); } catch { utils.toast(`Falha ao processar imagem: ${f.name}`, 'error'); }
+                  } else {
+                    results.push({ name: f.name, type: f.type || 'application/octet-stream', size: f.size });
+                  }
+                }
+                cf.value = cf.uploadMulti ? results : (results[0] || null);
+                renderPayload();
+              });
+            }
+
+            card.querySelector(`[data-del="${cf.id}"]`).addEventListener('click', () => {
+              state.customFields = state.customFields.filter(x => x.id !== cf.id); customFields.render(); renderPayload();
+            });
+            card.querySelector(`[data-up="${cf.id}"]`).addEventListener('click', () => customFields.move(cf.id, 'up'));
+            card.querySelector(`[data-down="${cf.id}"]`).addEventListener('click', () => customFields.move(cf.id, 'down'));
+          });
+        },
+        move: (id, dir) => {
+          const i = state.customFields.findIndex(f => f.id === id);
+          if (i < 0) return;
+          const j = dir === 'up' ? i - 1 : i + 1;
+          if (j < 0 || j >= state.customFields.length) return;
+          const arr = [...state.customFields];
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+          state.customFields = arr;
+          customFields.render();
+        }
+      };
+
+      /* ==================== PAYLOAD ==================== */
+      function buildPayload() {
+        const temaSel = utils.$(SELECTORS.tema), temaCustom = utils.$(SELECTORS.temaCustom);
+        const categoriaSel = utils.$(SELECTORS.categoria), categoriaCustom = utils.$(SELECTORS.categoriaCustom);
+        const estiloSel = utils.$(SELECTORS.estilo), estiloCustom = utils.$(SELECTORS.estiloCustom);
+
+        const temaValue = temaSel.value === 'Outro' ? (temaCustom.value || '') : temaSel.value;
+        const categoriaValue = categoriaSel.value === 'Outro' ? (categoriaCustom.value || '') : categoriaSel.value;
+        const estiloValue = estiloSel.value === 'Outro' ? (estiloCustom.value || '') : estiloSel.value;
+
+        const custom = state.customFields.map(f => ({
+          id: f.id, label: f.label, type: f.type, required: !!f.required,
+          value: (f.value !== undefined ? f.value : (f.type === 'checkbox' ? false : '')),
+          options: f.options || undefined, uploadMaxMB: f.uploadMaxMB, uploadMulti: f.uploadMulti
+        }));
+
+        const activeCount = state.dialogues.filter(d => d.active).length;
+        const hasDialogo = state.narracao || state.somNarracao;
+        const intent = hasDialogo ? (activeCount >= 2 ? 'dialogue' : 'monologue' ) : 'text_only';
+
+        return {
+          version: '2.3.0',
+          timestamp: utils.nowISO(),
+          client: { app: 'webhook_ui', page_version: 'falas-selecao-2.3.0' },
+          trigger: {
+            tema: temaValue,
+            categoria: categoriaValue,
+            estilo: estiloValue,
+            tonalidade: state.tonalidade,
+            gatilho: state.triggerKey,
+            audio: {
+              som: state.som,
+              narracao: state.narracao,
+              som_narracao: state.somNarracao,
+              som_file: state.somFile,
+              narracao_file: state.narracaoFile,
+              som_narracao_som_file: state.somNarracaoSomFile,
+              som_narracao_narr_file: state.somNarracaoNarrFile
+            },
+            dialogo: hasDialogo,
+            personagens: hasDialogo ? state.dialogues.filter(d => d.active).map(d => ({
+              id: d.id, nome: d.name.trim() || 'Personagem', fala: d.text.trim(),
+              voz: d.voiceId ? (() => { const v = state.voices.find(vv => vv.id === d.voiceId); return v ? { id: v.id, name: v.name } : null; })() : null
+            })) : [],
+            voz_global: !hasDialogo && state.vozGlobal ? (() => { const v = state.voices.find(vv => vv.id === state.vozGlobal); return v ? { id: v.id, name: v.name } : null; })() : null,
+            custom_fields: custom,
+            intent_hint: intent
+          }
+        };
+      }
+      function renderPayload() {
+        const target = utils.$(SELECTORS.payloadPreview);
+        target.textContent = JSON.stringify(buildPayload(), null, 2);
+        scheduleQuickSave();
+      }
+      const scheduleQuickSave = utils.debounce(() => storage.set(STORAGE_KEYS.quick, { ...state }), 800);
+
+      /* ==================== ENVIO WEBHOOK ==================== */
+      const webhook = {
+        async send() {
+          const btn = document.querySelector('#btnGerar');
+
+          // Validações simples dos selects (se vazio/Outro sem custom)
+          const invalids = [];
+          const temaSel = utils.$(SELECTORS.tema), temaCustom = utils.$(SELECTORS.temaCustom);
+          if (!temaSel.value || (temaSel.value === 'Outro' && !temaCustom.value.trim())) invalids.push('Tema');
+
+          const catSel = utils.$(SELECTORS.categoria), catCustom = utils.$(SELECTORS.categoriaCustom);
+          if (!catSel.value || (catSel.value === 'Outro' && !catCustom.value.trim())) invalids.push('Categoria');
+
+          const estSel = utils.$(SELECTORS.estilo), estCustom = utils.$(SELECTORS.estiloCustom);
+          if (!estSel.value || (estSel.value === 'Outro' && !estCustom.value.trim())) invalids.push('Estilo');
+
+          if (invalids.length) { utils.toast('Preencha: ' + invalids.join(', '), 'error'); return; }
+
+          if (state.narracao || state.somNarracao) {
+            const actives = state.dialogues.filter(d => d.active);
+            if (actives.length === 0) return utils.toast('Selecione ao menos um personagem com fala.', 'error');
+            if (!actives.every(d => !!d.voiceId)) return utils.toast('Selecione uma voz para cada personagem.', 'error');
+            if (!actives.every(d => d.text.trim().length > 0)) return utils.toast('Preencha a fala de cada personagem.', 'error');
+            const ids = actives.map(d => d.voiceId).filter(Boolean); if (new Set(ids).size !== ids.length) return utils.toast('Use vozes diferentes para cada personagem.', 'error');
+          }
+
+          const payload = buildPayload();
+          renderPayload();
+
+          if (!state.enviarWebhook) { utils.toast('Payload gerado. Copie no painel ao lado.', 'success'); return; }
+          if (!state.webhookUrl.trim()) return utils.toast('Informe a URL do Webhook.', 'error');
+          if (!utils.isValidUrl(state.webhookUrl)) return utils.toast('URL do Webhook inválida.', 'error');
+
+          let headers = { 'Content-Type': 'application/json' };
+          if (state.headersJson && state.headersJson.trim()) {
+            const parsed = utils.safeParseHeaders(state.headersJson);
+            if (parsed === null) return utils.toast('Cabeçalhos inválidos (formato).', 'error');
+            Object.assign(headers, parsed);
+          }
+
+          utils.$(SELECTORS.webhookMeta).textContent = 'Enviando…';
+          utils.$(SELECTORS.webhookResponse).textContent = '';
+          btn?.classList.add('loading'); btn && (btn.disabled = true);
+
+          const timeout = Math.max(5, state.timeoutSecs) * 1000;
+          const doFetch = async () => {
+            const controller = new AbortController();
+            const tm = setTimeout(() => controller.abort(), timeout);
+            try {
+              const init = { method: state.httpMethod, headers, signal: controller.signal };
+              if (state.httpMethod === 'POST') init.body = JSON.stringify(payload);
+              const res = await fetch(state.webhookUrl, init);
+              clearTimeout(tm);
+              return res;
+            } catch (err) { clearTimeout(tm); throw err; }
+          };
+
+          let res, ok = false, status = '...', text = '';
+          try {
+            const max = Math.max(0, Number(state.retries || 0));
+            for (let i = 0; i <= max; i++) {
+              try {
+                res = await doFetch();
+                ok = res.ok; status = res.status + ' ' + res.statusText;
+                const ct = res.headers.get('content-type') || '';
+                text = ct.includes('application/json') ? JSON.stringify(await res.json(), null, 2) : await res.text();
+                break;
+              } catch (err) {
+                if (i === max) throw err;
+                const delay = state.useBackoff ? Math.min(2000 * Math.pow(2, i), 8000) : 400;
+                await new Promise(r => setTimeout(r, delay));
+              }
+            }
+          } catch (err) {
+            status = 'ERRO';
+            text = String(err.message || err);
+          } finally {
+            btn?.classList.remove('loading'); btn && (btn.disabled = false);
+          }
+
+          const meta = `Status: ${status} • ${new Date().toLocaleString()}`;
+          utils.$(SELECTORS.webhookMeta).textContent = meta;
+          utils.$(SELECTORS.webhookResponse).textContent = text;
+          storage.set(STORAGE_KEYS.lastResponse, { meta, text });
+          utils.toast(ok ? 'Envio concluído.' : 'Falha no envio.', ok ? 'success' : 'error');
+        }
+      };
+
+      /* ==================== CLIPBOARD ==================== */
+      const clipboard = {
+        async copyPayload() {
+          try { await navigator.clipboard.writeText(utils.$(SELECTORS.payloadPreview).textContent); utils.toast('Payload copiado!', 'success'); }
+          catch { utils.toast('Não foi possível copiar.', 'error'); }
+        },
+        async copyPayloadMin() {
+          try {
+            const full = buildPayload();
+            const minimal = {
+              trigger: {
+                tema: full.trigger.tema,
+                categoria: full.trigger.categoria,
+                estilo: full.trigger.estilo,
+                tonalidade: full.trigger.tonalidade,
+                gatilho: full.trigger.gatilho,
+                dialogo: full.trigger.dialogo,
+                personagens: (full.trigger.personagens || []).map(p => ({ nome: p.nome, fala: p.fala, voz: p.voz?.id || '' })),
+                voz_global: full.trigger.voz_global?.id || '',
+                custom_fields: (full.trigger.custom_fields || []).map(f => ({ id: f.id, value: f.value }))
+              }
+            };
+            await navigator.clipboard.writeText(JSON.stringify(minimal, null, 2));
+            utils.toast('Payload mínimo copiado!', 'success');
+          } catch { utils.toast('Não foi possível copiar.', 'error'); }
+        },
+        downloadPayload() {
+          const blob = new Blob([utils.$(SELECTORS.payloadPreview).textContent], { type: 'application/json' });
+          const url = URL.createObjectURL(blob); const a = document.createElement('a');
+          a.href = url; a.download = 'payload_' + Date.now() + '.json'; a.click(); URL.revokeObjectURL(url);
+        },
+        async loadPayloadFile(file) {
+          try { const text = await file.text(); const obj = JSON.parse(text); utils.$(SELECTORS.payloadPreview).textContent = JSON.stringify(obj, null, 2); utils.toast('JSON carregado no preview.', 'success'); }
+          catch { utils.toast('Arquivo inválido.', 'error'); }
+        },
+        async copyCurl() {
+          const payloadJSON = utils.$(SELECTORS.payloadPreview).textContent || JSON.stringify(buildPayload());
+          let headers = { 'Content-Type': 'application/json' };
+          if (state.headersJson.trim()) { try { Object.assign(headers, JSON.parse(state.headersJson)); } catch { } }
+          const headerArgs = Object.entries(headers).map(([k, v]) => `-H ${JSON.stringify(k + ': ' + v)}`).join(' ');
+          const methodArg = state.httpMethod && state.httpMethod !== 'GET' ? `-X ${state.httpMethod} ` : '';
+          const dataArg = state.httpMethod === 'POST' ? `--data ${JSON.stringify(payloadJSON)} ` : '';
+          const urlStr = state.webhookUrl || 'https://seu-n8n/webhook/entrada';
+          const cmd = `curl ${methodArg}${headerArgs} ${dataArg}${JSON.stringify(urlStr)}`;
+          try { await navigator.clipboard.writeText(cmd); utils.toast('cURL copiado!', 'success'); } catch { utils.toast('Não foi possível copiar o cURL.', 'error'); }
+        },
+        async copyResponse() {
+          try { await navigator.clipboard.writeText(utils.$(SELECTORS.webhookResponse).textContent); utils.toast('Resposta copiada!', 'success'); }
+          catch { utils.toast('Não foi possível copiar.', 'error'); }
+        },
+        clearResponse() {
+          utils.$(SELECTORS.webhookMeta).textContent = 'Sem envio ainda.';
+          utils.$(SELECTORS.webhookResponse).textContent = '';
+          storage.remove(STORAGE_KEYS.lastResponse);
+        }
+      };
+
+      /* ==================== PRESETS & WEBHOOKS LIB ==================== */
+      function renderPresetsList() {
+        const list = storage.get(STORAGE_KEYS.presets, []);
+        const host = document.querySelector('#lp_list');
+        if (!host) return;
+        host.innerHTML = '';
+        list
+          .filter(p => {
+            const q = (document.querySelector('#lp_search')?.value || '').trim().toLowerCase();
+            return !q || p.name.toLowerCase().includes(q);
+          })
+          .forEach(p => {
+            const card = document.createElement('div'); card.className = 'card'; card.style.padding = '12px';
+            card.innerHTML = `
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:8px">
+            <div>
+              <div style="font-weight:700">${p.name}</div>
+              <div class="muted" style="font-size:12px">Atualizado: ${new Date(p.updatedAt || p.createdAt).toLocaleString()}</div>
+            </div>
+            <div style="display:flex; gap:6px">
+              <button class="btn small" data-load="${p.id}">Carregar</button>
+              <button class="btn small" data-export="${p.id}">Exportar</button>
+              <button class="btn small" data-del="${p.id}">Excluir</button>
+            </div>
+          </div>
+        `;
+            host.appendChild(card);
+          });
+
+        host.querySelectorAll('[data-load]').forEach(b => b.addEventListener('click', () => {
+          const id = b.getAttribute('data-load');
+          const list = storage.get(STORAGE_KEYS.presets, []);
+          const item = list.find(x => x.id === id);
+          if (!item) return;
+          const d = item.data || {};
+          // Não sobrescreve biblioteca de vozes salva do usuário; apenas nomes/ids
+          if (Array.isArray(d.voices) && d.voices.length) {
+            // merge por id (mantém src existentes)
+            d.voices.forEach(v => {
+              if (!state.voices.find(x => x.id === v.id)) state.voices.push({ id: v.id, name: v.name, src: null });
+            });
+            voices.save();
+          }
+          Object.assign(state, {
+            tema: d.tema || '', categoria: d.categoria || '', estilo: d.estilo || '',
+            dialogo: !!d.dialogo, numChars: d.numChars || 2, tonalidade: d.tonalidade || 'Humorístico',
+            vozId: d.vozId || '', triggerKey: d.triggerKey || '',
+            dialogues: Array.isArray(d.dialogues) ? d.dialogues : state.dialogues, customFields: Array.isArray(d.customFields) ? d.customFields : []
+          });
+          renderAll();
+          utils.toast('Preset carregado.', 'success');
+        }));
+
+        host.querySelectorAll('[data-export]').forEach(b => b.addEventListener('click', () => {
+          const id = b.getAttribute('data-export');
+          const list = storage.get(STORAGE_KEYS.presets, []);
+          const item = list.find(x => x.id === id);
+          if (!item) return;
+          const blob = new Blob([JSON.stringify(item, null, 2)], { type: 'application/json' });
+          const url = URL.createObjectURL(blob); const a = document.createElement('a');
+          a.href = url; a.download = (item.name || 'preset') + '.json'; a.click(); URL.revokeObjectURL(url);
+        }));
+
+        host.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', () => {
+          const id = b.getAttribute('data-del');
+          const list = storage.get(STORAGE_KEYS.presets, []);
+          const item = list.find(x => x.id === id);
+          if (!item) return;
+          if (!confirm(`Excluir preset "${item.name}"?`)) return;
+          const next = list.filter(x => x.id !== id);
+          storage.set(STORAGE_KEYS.presets, next);
+          renderPresetsList();
+          utils.toast('Preset excluído.', 'success');
+        }));
+      }
+
+      function renderWebhooks() {
+        const wrap = document.querySelector('#wh_list');
+        if (!wrap) return;
+        const list = storage.get(STORAGE_KEYS.webhooks, []);
+        wrap.innerHTML = '';
+        list.forEach(w => {
+          const card = document.createElement('div'); card.className = 'card'; card.style.padding = '12px';
+          card.innerHTML = `
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px">
+          <div>
+            <div style="font-weight:700">${w.name}</div>
+            <div class="muted" style="font-size:12px">${w.method} • ${w.url}</div>
+          </div>
+          <div style="display:flex; gap:6px">
+            <button class="btn small" data-apply="${w.id}">Usar</button>
+            <button class="btn small" data-del="${w.id}">Excluir</button>
+          </div>
+        </div>
+      `;
+          wrap.appendChild(card);
+        });
+        wrap.querySelectorAll('[data-apply]').forEach(b => b.addEventListener('click', () => {
+          const id = b.getAttribute('data-apply');
+          const list = storage.get(STORAGE_KEYS.webhooks, []);
+          const item = list.find(x => x.id === id); if (!item) return;
+          state.webhookUrl = item.url; state.httpMethod = item.method || 'POST';
+          const urlInp = utils.$(SELECTORS.webhookUrl); const mSel = utils.$(SELECTORS.httpMethod);
+          if (urlInp) urlInp.value = state.webhookUrl; if (mSel) mSel.value = state.httpMethod;
+          utils.toast('Webhook aplicado.', 'success');
+        }));
+        wrap.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', () => {
+          const id = b.getAttribute('data-del');
+          const next = (storage.get(STORAGE_KEYS.webhooks, [])).filter(x => x.id !== id);
+          storage.set(STORAGE_KEYS.webhooks, next);
+          renderWebhooks();
+          utils.toast('Webhook removido.', 'success');
+        }));
+      }
+
+      /* ==================== RENDER GLOBAL ==================== */
+      function renderAll() {
+        // Pré-carregar valor dos selects
+        if (utils.$(SELECTORS.vozGlobal)) voices.renderOptions(utils.$(SELECTORS.vozGlobal), state.vozGlobal);
+        voices.renderLibrary();
+        customFields.render();
+        renderDialogues();
+        renderPayload();
+      }
+
+      /* ==================== MODAIS & EVENTOS ==================== */
+      function closeModal(sel) { const m = document.querySelector(sel); if (m) m.classList.remove('show'); }
+      function openModal(sel) { const m = document.querySelector(sel); if (m) m.classList.add('show'); }
+      function bindModalClose() {
+        document.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', () => {
+          const sel = btn.getAttribute('data-close'); closeModal(sel);
+        }));
+        document.querySelectorAll('[data-open]').forEach(btn => btn.addEventListener('click', () => {
+          const sel = btn.getAttribute('data-open'); openModal(sel);
+        }));
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') document.querySelectorAll('.modal.show').forEach(m => m.classList.remove('show'));
+          if (prefs.shortcuts) {
+            // Atalhos
+            if (e.ctrlKey && e.key.toLowerCase() === 'enter') { e.preventDefault(); webhook.send(); }
+            if (e.altKey && e.key.toLowerCase() === 's') { e.preventDefault(); document.querySelector('#modalSettings')?.classList.add('show'); }
+            if (e.key === '/') { e.preventDefault(); utils.$('#tema')?.focus(); }
+          }
+        });
+        document.querySelectorAll('.modal').forEach(m => {
+          m.addEventListener('click', (e) => { if (e.target === m) m.classList.remove('show'); });
+        });
+      }
+
+      /* ==================== BINDINGS PRINCIPAIS ==================== */
+      function bindUI() {
+        console.log('=== CONFIGURANDO INTERFACE ===');
+
+        // Botões principais
+        console.log('Configurando botões principais...');
+        utils.$('#btnGerar')?.addEventListener('click', webhook.send);
+
+        utils.$('#btnTestUrl')?.addEventListener('click', async () => {
+          const url = utils.$(SELECTORS.webhookUrl).value.trim();
+          if (!url) return utils.toast('Informe a URL do Webhook.', 'warning');
+          if (!utils.isValidUrl(url)) return utils.toast('URL inválida.', 'error');
+          const b = utils.$('#btnTestUrl'); b.classList.add('loading'); b.disabled = true;
+          try { const res = await fetch(url, { method: 'HEAD' }); utils.toast(`Teste: ${res.status} ${res.statusText}`, res.ok ? 'success' : 'warning'); }
+          catch (e) { utils.toast('Falha no teste: ' + (e.message || e), 'error'); }
+          finally { b.classList.remove('loading'); b.disabled = false; }
+        });
+
+        // Payload actions
+        console.log('Configurando botões de payload...');
+        utils.$('#btnCopyPayload')?.addEventListener('click', clipboard.copyPayload);
+        utils.$('#btnCopyPayloadMin')?.addEventListener('click', clipboard.copyPayloadMin);
+        utils.$('#btnDownloadPayload')?.addEventListener('click', clipboard.downloadPayload);
+        utils.$('#btnLoadPayloadFile')?.addEventListener('change', (e) => { const f = e.target.files?.[0]; if (f) clipboard.loadPayloadFile(f); });
+        utils.$('#btnCopyCurl')?.addEventListener('click', clipboard.copyCurl);
+
+        // Response actions
+        console.log('Configurando botões de resposta...');
+        utils.$('#btnCopyResponse')?.addEventListener('click', clipboard.copyResponse);
+        utils.$('#btnClearResponse')?.addEventListener('click', clipboard.clearResponse);
+
+        // Estado rápido
+        console.log('Configurando botões de estado...');
+        utils.$('#btnSaveQuick')?.addEventListener('click', () => { storage.set(STORAGE_KEYS.quick, { ...state }); utils.toast('Estado rápido salvo.', 'success'); });
+        utils.$('#btnLoadQuick')?.addEventListener('click', () => {
+          const raw = storage.get(STORAGE_KEYS.quick);
+          if (!raw) return utils.toast('Nenhum estado rápido salvo.', 'warning');
+          Object.assign(state, { ...raw });
+          // Limpa inputs de arquivos visuais
+          utils.$(SELECTORS.somFile)?.value = '';
+          utils.$(SELECTORS.narracaoFile)?.value = '';
+          utils.$(SELECTORS.somNarracaoSomFile)?.value = '';
+          utils.$(SELECTORS.somNarracaoNarrFile)?.value = '';
+          renderAll();
+          utils.toast('Estado rápido carregado.', 'success');
+        });
+        utils.$('#btnResetForm')?.addEventListener('click', () => {
+          Object.assign(state, {
+            tema: '', categoria: '', estilo: '',
+            som: false, narracao: false, somNarracao: false,
+            somFile: null, narracaoFile: null, somNarracaoSomFile: null, somNarracaoNarrFile: null,
+            dialogo: false, numChars: 2, tonalidade: 'Humorístico', triggerKey: '',
+            vozGlobal: '', enviarWebhook: false, webhookUrl: '', httpMethod: 'POST', timeoutSecs: 20, retries: 0, useBackoff: false, headersJson: '',
+            dialogues: [{ id: utils.uid(), name: 'Personagem 1', text: '', voiceId: '', active: false }, { id: utils.uid(), name: 'Personagem 2', text: '', voiceId: '', active: false }],
+            customFields: []
+          });
+          utils.$(SELECTORS.somFile)?.value = '';
+          utils.$(SELECTORS.narracaoFile)?.value = '';
+          utils.$(SELECTORS.somNarracaoSomFile)?.value = '';
+          utils.$(SELECTORS.somNarracaoNarrFile)?.value = '';
+          renderAll();
+          utils.toast('Formulário resetado.', 'info');
+        });
+
+        // Configurações/presets
+        console.log('Configurando botões de configuração...');
+        utils.$('#btnSettings')?.addEventListener('click', () => { document.querySelector('#modalSettings')?.classList.add('show'); preferences.apply(); utils.$('#prefTheme')?.focus(); });
+        utils.$('#btnSavePreset')?.addEventListener('click', () => { utils.$('#sp_name').value = ''; document.querySelector('#modalSavePreset')?.classList.add('show'); });
+        utils.$('#btnLoadPreset')?.addEventListener('click', () => { document.querySelector('#modalLoadPreset')?.classList.add('show'); renderPresetsList(); });
+
+        // Biblioteca de webhooks
+        console.log('Configurando botões de webhook...');
+        utils.$('#btnSaveWebhook')?.addEventListener('click', () => {
+          const name = prompt('Nome do webhook:'); if (!name) return;
+          const url = utils.$(SELECTORS.webhookUrl).value.trim(); if (!url) return utils.toast('Informe a URL do Webhook.', 'error');
+          const list = storage.get(STORAGE_KEYS.webhooks, []);
+          list.unshift({ id: utils.uid(), name, url, method: state.httpMethod, createdAt: utils.nowISO() });
+          storage.set(STORAGE_KEYS.webhooks, list);
+          renderWebhooks();
+          utils.toast('Webhook salvo.', 'success');
+        });
+        utils.$('#btnOpenWebhooks')?.addEventListener('click', () => { document.querySelector('#modalWebhooks')?.classList.add('show'); renderWebhooks(); });
+        utils.$('#wh_add')?.addEventListener('click', () => {
+          const name = utils.$('#wh_name').value.trim();
+          const url = utils.$('#wh_url').value.trim();
+          const method = utils.$('#wh_isGet').checked ? 'GET' : 'POST';
+          if (!name || !url) return utils.toast('Preencha nome e URL.', 'error');
+          if (!utils.isValidUrl(url)) return utils.toast('URL inválida.', 'error');
+          const list = storage.get(STORAGE_KEYS.webhooks, []);
+          list.unshift({ id: utils.uid(), name, url, method, createdAt: utils.nowISO() });
+          storage.set(STORAGE_KEYS.webhooks, list);
+          utils.$('#wh_name').value = '';
+          utils.$('#wh_url').value = '';
+          utils.$('#wh_isGet').checked = false;
+          renderWebhooks();
+          utils.toast('Webhook salvo.', 'success');
+        });
+
+        // Nova Voz
+        console.log('Configurando botões de voz...');
+        utils.$('#btnNewVoice')?.addEventListener('click', () => { document.querySelector('#modalVoice')?.classList.add('show'); utils.$('#nv_name').value = ''; utils.$('#nv_file').value = ''; });
+        utils.$('#btnNewVoiceFromGlobal')?.addEventListener('click', () => { document.querySelector('#modalVoice')?.classList.add('show'); utils.$('#nv_name').value = ''; utils.$('#nv_file').value = ''; });
+        utils.$('#nv_save')?.addEventListener('click', async () => {
+          const name = utils.$('#nv_name').value.trim(); if (!name) return utils.toast('Dê um nome para a voz.', 'error');
+          let src = null; const f = utils.$('#nv_file').files[0];
+          if (f) { try { src = await utils.fileToBase64(f); } catch { return utils.toast('Falha ao carregar arquivo.', 'error'); } }
+          state.voices = [{ id: utils.uid(), name, src }, ...state.voices];
+          voices.save();
+          document.querySelector('#modalVoice')?.classList.remove('show');
+          renderAll();
+          utils.toast('Voz criada.', 'success');
+        });
+
+        // Criar campo
+        console.log('Configurando botões de campos...');
+        utils.$('#btnAddField')?.addEventListener('click', () => {
+          document.querySelector('#modalField')?.classList.add('show');
+          utils.$('#cf_label').value = '';
+          utils.$('#cf_type').value = 'text';
+          utils.$('#cf_required').checked = false;
+          utils.$('#cf_options').value = '';
+          utils.$('#cf_opts_wrap').style.display = 'none';
+          utils.$('#cf_upload_wrap').style.display = 'none';
+          utils.$('#cf_bulk').value = '';
+        });
+        utils.$('#cf_type')?.addEventListener('change', () => {
+          const type = utils.$('#cf_type').value;
+          utils.$('#cf_opts_wrap').style.display = (type === 'dropdown') ? 'block' : 'none';
+          utils.$('#cf_upload_wrap').style.display = (type === 'upload') ? 'block' : 'none';
+        });
+        utils.$('#cf_add')?.addEventListener('click', () => {
+          const type = utils.$('#cf_type').value;
+          const required = utils.$('#cf_required').checked;
+          const options = type === 'dropdown' ? utils.$('#cf_options').value.split(',').map(s => s.trim()).filter(Boolean) : undefined;
+          const upMaxMb = Number(utils.$('#cf_upload_max')?.value || 10);
+          const upMulti = !!utils.$('#cf_upload_multi')?.checked;
+          const bulkRaw = (utils.$('#cf_bulk')?.value || '').split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+          const createField = (label) => ({
+            id: utils.uid(), label, type, required, options,
+            value: type === 'checkbox' ? false : '',
+            uploadMaxMB: type === 'upload' ? upMaxMb : undefined,
+            uploadMulti: type === 'upload' ? upMulti : undefined
+          });
+          if (bulkRaw.length > 0) {
+            const items = bulkRaw.map(label => createField(label));
+            state.customFields = [...items, ...state.customFields];
+            document.querySelector('#modalField')?.classList.remove('show');
+            customFields.render(); renderPayload();
+            utils.toast(`${items.length} campos criados.`, 'success');
+            return;
+          }
+          const label = utils.$('#cf_label').value.trim();
+          if (!label) return utils.toast('Informe um rótulo.', 'error');
+          state.customFields = [createField(label), ...state.customFields];
+          document.querySelector('#modalField')?.classList.remove('show');
+          customFields.render(); renderPayload();
+          utils.toast('Campo criado.', 'success');
+        });
+
+        // Salvar preset
+        utils.$('#sp_save')?.addEventListener('click', () => {
+          const name = utils.$('#sp_name').value.trim(); if (!name) return utils.toast('Dê um nome ao preset.', 'error');
+          const lightVoices = state.voices.map(({ id, name }) => ({ id, name }));
+          const data = {
+            tema: state.tema, categoria: state.categoria, estilo: state.estilo,
+            dialogo: state.dialogo, numChars: state.numChars, tonalidade: state.tonalidade,
+            vozId: state.vozGlobal, dialogues: state.dialogues, customFields: state.customFields,
+            voices: lightVoices, triggerKey: state.triggerKey
+          };
+          const list = storage.get(STORAGE_KEYS.presets, []);
+          const exists = list.find(p => p.name.toLowerCase() === name.toLowerCase());
+          if (exists) {
+            if (!confirm('Já existe um preset com esse nome. Substituir?')) return;
+            exists.data = data; exists.updatedAt = utils.nowISO();
+          } else {
+            list.unshift({ id: utils.uid(), name, data, createdAt: utils.nowISO() });
+          }
+          storage.set(STORAGE_KEYS.presets, list);
+          document.querySelector('#modalSavePreset')?.classList.remove('show');
+          utils.toast('Preset salvo.', 'success');
+        });
+
+        // Filtros de lista de presets
+        utils.$('#lp_search')?.addEventListener('input', utils.debounce(renderPresetsList, 200));
+        utils.$('#lp_import')?.addEventListener('change', async (e) => {
+          const f = e.target.files?.[0]; if (!f) return;
+          try {
+            const text = await f.text(); const obj = JSON.parse(text);
+            const list = storage.get(STORAGE_KEYS.presets, []);
+            list.unshift(obj); storage.set(STORAGE_KEYS.presets, list);
+            renderPresetsList(); utils.toast('Preset importado.', 'success');
+          } catch { utils.toast('Arquivo inválido.', 'error'); }
+          finally { e.target.value = ''; }
+        });
+
+        // Preferências
+        utils.$('#prefTheme')?.addEventListener('change', () => { prefs.theme = utils.$('#prefTheme').value; preferences.apply(); preferences.save(); });
+        utils.$('#prefBgPreset')?.addEventListener('change', () => { prefs.bgPreset = utils.$('#prefBgPreset').value; prefs.bgCustom = ''; preferences.apply(); preferences.save(); });
+        utils.$('#prefBgCustom')?.addEventListener('input', () => { prefs.bgCustom = utils.$('#prefBgCustom').value.trim(); preferences.apply(); preferences.save(); });
+        utils.$('#prefContrast')?.addEventListener('change', () => { prefs.contrast = utils.$('#prefContrast').value; preferences.apply(); preferences.save(); });
+        utils.$('#prefSize')?.addEventListener('change', () => { prefs.size = utils.$('#prefSize').value; preferences.apply(); preferences.save(); });
+        utils.$('#prefScale')?.addEventListener('input', () => { prefs.scale = Number(utils.$('#prefScale').value || 1); preferences.apply(); preferences.save(); });
+        utils.$('#prefReduceMotion')?.addEventListener('change', () => { prefs.reduceMotion = utils.$('#prefReduceMotion').checked; preferences.apply(); preferences.save(); });
+        utils.$('#prefCompact')?.addEventListener('change', () => { prefs.compact = utils.$('#prefCompact').checked; preferences.apply(); preferences.save(); });
+        utils.$('#prefShortcuts')?.addEventListener('change', () => { prefs.shortcuts = utils.$('#prefShortcuts').checked; preferences.apply(); preferences.save(); });
+        utils.$('#prefMonoPre')?.addEventListener('change', () => { prefs.monoPre = utils.$('#prefMonoPre').checked; preferences.apply(); preferences.save(); });
+
+        utils.$('#btnResetPrefs')?.addEventListener('click', () => {
+          Object.assign(prefs, { theme: 'auto', contrast: 'normal', scale: 1, size: 'normal', reduceMotion: false, compact: false, shortcuts: true, monoPre: false });
+          preferences.apply(); preferences.save(); utils.toast('Preferências restauradas.', 'success');
+        });
+
+        // Seletor de áudio (exclusivo)
+        const clearAudioFiles = () => {
+          state.somFile = state.narracaoFile = state.somNarracaoSomFile = state.somNarracaoNarrFile = null;
+          utils.$(SELECTORS.somFile)?.value = ''; utils.$(SELECTORS.narracaoFile)?.value = '';
+          utils.$(SELECTORS.somNarracaoSomFile)?.value = ''; utils.$(SELECTORS.somNarracaoNarrFile)?.value = '';
+        };
+
+        utils.$(SELECTORS.som)?.addEventListener('change', () => {
+          if (utils.$(SELECTORS.som).checked) {
+            state.narracao = false; state.somNarracao = false;
+            utils.$(SELECTORS.narracao).checked = false; utils.$(SELECTORS.somNarracao).checked = false;
+            utils.$(SELECTORS.wrapNarracaoUpload).style.display = 'none';
+            utils.$(SELECTORS.wrapSomNarracaoUpload).style.display = 'none';
+            state.dialogo = false;
+            clearAudioFiles();
+          }
+          state.som = utils.$(SELECTORS.som).checked;
+          utils.$(SELECTORS.wrapSomUpload).style.display = state.som ? 'block' : 'none';
+          utils.$(SELECTORS.dialogoConfig).classList.toggle('hidden', !state.dialogo);
+          utils.$(SELECTORS.dialogoArea).classList.toggle('hidden', !state.dialogo);
+          renderDialogues(); renderPayload();
+        });
+
+        utils.$(SELECTORS.narracao)?.addEventListener('change', () => {
+          if (utils.$(SELECTORS.narracao).checked) {
+            state.som = false; state.somNarracao = false;
+            utils.$(SELECTORS.som).checked = false; utils.$(SELECTORS.somNarracao).checked = false;
+            utils.$(SELECTORS.wrapSomUpload).style.display = 'none';
+            utils.$(SELECTORS.wrapSomNarracaoUpload).style.display = 'none';
+            state.dialogo = true;
+            clearAudioFiles();
+          }
+          state.narracao = utils.$(SELECTORS.narracao).checked;
+          utils.$(SELECTORS.wrapNarracaoUpload).style.display = state.narracao ? 'block' : 'none';
+          utils.$(SELECTORS.dialogoConfig).classList.toggle('hidden', !state.dialogo);
+          utils.$(SELECTORS.dialogoArea).classList.toggle('hidden', !state.dialogo);
+          renderDialogues(); renderPayload();
+        });
+
+        utils.$(SELECTORS.somNarracao)?.addEventListener('change', () => {
+          if (utils.$(SELECTORS.somNarracao).checked) {
+            state.som = false; state.narracao = false;
+            utils.$(SELECTORS.som).checked = false; utils.$(SELECTORS.narracao).checked = false;
+            utils.$(SELECTORS.wrapSomUpload).style.display = 'none';
+            utils.$(SELECTORS.wrapNarracaoUpload).style.display = 'none';
+            state.dialogo = true;
+            clearAudioFiles();
+          }
+          state.somNarracao = utils.$(SELECTORS.somNarracao).checked;
+          utils.$(SELECTORS.wrapSomNarracaoUpload).style.display = state.somNarracao ? 'block' : 'none';
+          utils.$(SELECTORS.dialogoConfig).classList.toggle('hidden', !state.dialogo);
+          utils.$(SELECTORS.dialogoArea).classList.toggle('hidden', !state.dialogo);
+          renderDialogues(); renderPayload();
+        });
+
+        // Uploads de áudio
+        utils.$(SELECTORS.somFile)?.addEventListener('change', async (e) => {
+          const file = e.target.files[0]; state.somFile = null;
+          if (file) { try { state.somFile = await utils.fileToBase64(file); utils.toast('Arquivo de som carregado!', 'success'); } catch { utils.toast('Erro ao carregar arquivo de som', 'error'); } }
+          renderPayload();
+        });
+        utils.$(SELECTORS.narracaoFile)?.addEventListener('change', async (e) => {
+          const file = e.target.files[0]; state.narracaoFile = null;
+          if (file) { try { state.narracaoFile = await utils.fileToBase64(file); utils.toast('Arquivo de narração carregado!', 'success'); } catch { utils.toast('Erro ao carregar arquivo de narração', 'error'); } }
+          renderPayload();
+        });
+        utils.$(SELECTORS.somNarracaoSomFile)?.addEventListener('change', async (e) => {
+          const file = e.target.files[0]; state.somNarracaoSomFile = null;
+          if (file) { try { state.somNarracaoSomFile = await utils.fileToBase64(file); utils.toast('Arquivo de som carregado!', 'success'); } catch { utils.toast('Erro ao carregar arquivo de som', 'error'); } }
+          renderPayload();
+        });
+        utils.$(SELECTORS.somNarracaoNarrFile)?.addEventListener('change', async (e) => {
+          const file = e.target.files[0]; state.somNarracaoNarrFile = null;
+          if (file) { try { state.somNarracaoNarrFile = await utils.fileToBase64(file); utils.toast('Arquivo de narração carregado!', 'success'); } catch { utils.toast('Erro ao carregar arquivo de narração', 'error'); } }
+          renderPayload();
+        });
+
+        // Demais campos
+        utils.$(SELECTORS.tonalidade)?.addEventListener('change', () => { state.tonalidade = utils.$(SELECTORS.tonalidade).value; renderPayload(); });
+        utils.$(SELECTORS.numChars)?.addEventListener('input', () => { state.numChars = utils.$(SELECTORS.numChars).value; renderDialogues(); renderPayload(); });
+        utils.$(SELECTORS.vozGlobal)?.addEventListener('change', () => { state.vozGlobal = utils.$(SELECTORS.vozGlobal).value; renderPayload(); });
+
+        utils.$(SELECTORS.entradaTexto)?.addEventListener('change', () => {
+          if (utils.$(SELECTORS.entradaTexto).checked) {
+            state.entradaTipo = 'texto';
+            utils.$(SELECTORS.wrapArquivoEntrada).style.display = 'none';
+            state.arquivoEntrada = null;
+            utils.$(SELECTORS.arquivoEntrada).value = '';
+            renderPayload();
+          }
+        });
+        utils.$(SELECTORS.entradaArquivo)?.addEventListener('change', () => {
+          if (utils.$(SELECTORS.entradaArquivo).checked) {
+            state.entradaTipo = 'arquivo';
+            utils.$(SELECTORS.wrapArquivoEntrada).style.display = 'block';
+            renderPayload();
+          }
+        });
+        utils.$(SELECTORS.arquivoEntrada)?.addEventListener('change', (e) => {
+          const file = e.target.files[0];
+          if (file) {
+            const maxSize = 10 * 1024 * 1024;
+            if (file.size > maxSize) { utils.toast('Arquivo muito grande. Máximo: 10MB', 'error'); e.target.value = ''; state.arquivoEntrada = null; }
+            else { state.arquivoEntrada = { name: file.name, size: file.size, type: file.type }; utils.toast(`Arquivo selecionado: ${file.name}`, 'success'); }
+          } else { state.arquivoEntrada = null; }
+          renderPayload();
+        });
+
+        utils.$(SELECTORS.clonarVoz)?.addEventListener('change', () => { state.clonarVoz = utils.$(SELECTORS.clonarVoz).checked; renderPayload(); });
+        utils.$(SELECTORS.aplicarAudio)?.addEventListener('change', () => { state.aplicarAudio = utils.$(SELECTORS.aplicarAudio).checked; renderPayload(); });
+
+        utils.$(SELECTORS.webhookUrl)?.addEventListener('input', utils.debounce(() => { state.webhookUrl = utils.$(SELECTORS.webhookUrl).value; storage.set(STORAGE_KEYS.quick, { ...state }); }, 400));
+        utils.$(SELECTORS.triggerKey)?.addEventListener('input', () => { state.triggerKey = utils.$(SELECTORS.triggerKey).value; });
+        utils.$(SELECTORS.httpMethod)?.addEventListener('change', () => { state.httpMethod = utils.$(SELECTORS.httpMethod).value; });
+        utils.$(SELECTORS.timeoutSecs)?.addEventListener('input', () => { state.timeoutSecs = Number(utils.$(SELECTORS.timeoutSecs).value || 20); });
+        utils.$(SELECTORS.retries)?.addEventListener('input', () => { state.retries = Math.max(0, Math.min(3, Number(utils.$(SELECTORS.retries).value || 0))); });
+        utils.$(SELECTORS.useBackoff)?.addEventListener('change', () => { state.useBackoff = utils.$(SELECTORS.useBackoff).checked; });
+        utils.$(SELECTORS.headersJson)?.addEventListener('input', () => { state.headersJson = utils.$(SELECTORS.headersJson).value; });
+        utils.$(SELECTORS.enviarWebhook)?.addEventListener('change', () => { state.enviarWebhook = utils.$(SELECTORS.enviarWebhook).checked; });
+
+        // Tema/Categoria/Estilo + custom
+        const bindCustomSelect = (selId, customId, stateKey) => {
+          const sel = utils.$(selId), custom = utils.$(customId);
+          sel?.addEventListener('change', () => {
+            if (sel.value === 'Outro') { custom.style.display = 'block'; custom.focus(); }
+            else { custom.style.display = 'none'; state[stateKey] = sel.value; renderPayload(); }
+          });
+          custom?.addEventListener('input', utils.debounce(() => { state[stateKey] = custom.value; renderPayload(); }, 300));
+        };
+        bindCustomSelect(SELECTORS.tema, SELECTORS.temaCustom, 'tema');
+        bindCustomSelect(SELECTORS.categoria, SELECTORS.categoriaCustom, 'categoria');
+        bindCustomSelect(SELECTORS.estilo, SELECTORS.estiloCustom, 'estilo');
+
+        // Cabeçalhos JSON formatar/limpar
+        console.log('Configurando botões de cabeçalhos...');
+        utils.$('#btnFmtHeaders')?.addEventListener('click', () => {
+          const el = utils.$(SELECTORS.headersJson);
+          if (!el.value.trim()) return utils.toast('Nada para validar.', 'warning');
+          const obj = utils.safeParseHeaders(el.value);
+          if (obj === null) return utils.toast('Cabeçalhos inválidos.', 'error');
+          el.value = JSON.stringify(obj, null, 2);
+          utils.toast('Cabeçalhos OK.', 'success');
+        });
+        utils.$('#btnClearHeaders')?.addEventListener('click', () => { utils.$(SELECTORS.headersJson).value = ''; state.headersJson = ''; });
+
+        // Salvar preset (modal save) já bindado acima
+        console.log('=== INTERFACE CONFIGURADA COM SUCESSO ===');
+      }
+
+      /* ==================== BOOT ==================== */
+      function boot() {
+        console.log('=== INICIANDO BOOT ===');
+        preferences.load();
+        preferences.apply();
+        voices.load();
+
+        // Restaura última resposta
+        const last = storage.get(STORAGE_KEYS.lastResponse, null);
+        if (last) {
+          utils.$(SELECTORS.webhookMeta).textContent = last.meta || 'Sem envio ainda.';
+          utils.$(SELECTORS.webhookResponse).textContent = last.text || '';
+        }
+
+        console.log('Renderizando interface...');
+        renderAll();
+
+        console.log('Configurando modals...');
+        bindModalClose();
+
+        console.log('Configurando interface...');
+        bindUI();
+
+        console.log('=== BOOT CONCLUÍDO ===');
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', boot);
+      } else {
+        boot();
+      }
+
+      // Função de teste final para verificar tudo
+      window.testAll = () => {
+        console.log('=== TESTE COMPLETO DA PLATAFORMA ===');
+
+        // Testar botões principais
+        console.log('\n1. Testando botões principais...');
+        if (typeof testButtons === 'function') testButtons();
+
+        // Testar botões de print
+        console.log('\n2. Testando botões de print...');
+        if (typeof testPrintButtons === 'function') testPrintButtons();
+
+        // Testar modals
+        console.log('\n3. Testando modals...');
+        if (typeof testModals === 'function') testModals();
+
+        // Testar debug geral
+        console.log('\n4. Debug geral...');
+        if (typeof debugButtons === 'function') debugButtons();
+
+        console.log('\n=== TESTE COMPLETO FINALIZADO ===');
+      };
+    })();
+  </script>
+
+  <!-- Script adicional removido: toda a lógica de botões já está coberta no script principal acima, garantindo robustez e evitando conflitos. -->
+</body>
+
+</html>
